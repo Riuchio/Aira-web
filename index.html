@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#080507" />
+  <title>Aira Live</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    :root {
+      --bg-void: #080507;
+      --crimson: #d90429;
+      --crimson-glow: rgba(217, 4, 41, 0.55);
+      --gold: #e0b84c;
+      --gold-dim: rgba(224, 184, 76, 0.24);
+      --glass: rgba(18, 10, 14, 0.84);
+      --text-main: #f8f2f4;
+      --text-muted: #9e8a92;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: radial-gradient(circle at 50% 35%, #2b0610 0%, #120408 48%, var(--bg-void) 88%);
+      color: var(--text-main);
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #bg-particles {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* SIDEBAR RIWAYAT SESI */
+    .sidebar-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(4px);
+      z-index: 30;
+      display: none;
+    }
+    .sidebar-backdrop.open { display: block; }
+
+    aside#history-drawer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 280px;
+      max-width: 82vw;
+      background: #0e070a;
+      border-right: 1px solid var(--gold-dim);
+      z-index: 40;
+      transform: translateX(-100%);
+      transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+      display: flex;
+      flex-direction: column;
+      padding: 18px 14px;
+    }
+    aside#history-drawer.open { transform: translateX(0); }
+
+    .new-chat-btn {
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--gold-dim);
+      background: linear-gradient(135deg, rgba(217, 4, 41, 0.22), rgba(20, 10, 14, 0.9));
+      color: var(--text-main);
+      font-size: 0.84rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      margin-bottom: 16px;
+    }
+
+    .drawer-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--gold);
+      opacity: 0.8;
+      margin-bottom: 8px;
+      padding-left: 6px;
+    }
+
+    .session-list {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .session-item {
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      cursor: pointer;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: 0.2s;
+    }
+    .session-item.active, .session-item:hover {
+      background: rgba(217, 4, 41, 0.16);
+      border-color: rgba(217, 4, 41, 0.4);
+      color: var(--text-main);
+    }
+
+    .drawer-footer {
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .account-pill {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.04);
+      font-size: 0.78rem;
+    }
+
+    .account-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow: hidden;
+    }
+
+    .account-info img {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 1px solid var(--gold);
+    }
+
+    .logout-btn {
+      background: transparent;
+      border: 1px solid rgba(217,4,41,0.4);
+      color: #ff758f;
+      font-size: 0.7rem;
+      padding: 4px 8px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    /* HEADER */
+    header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px;
+      z-index: 10;
+      gap: 6px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1px solid var(--gold-dim);
+      background: var(--glass);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.9rem;
+      overflow: hidden;
+    }
+
+    .brand-title {
+      font-family: 'Cinzel', serif;
+      font-size: 1.05rem;
+      letter-spacing: 1.6px;
+    }
+
+    .pill-group {
+      display: flex;
+      background: var(--glass);
+      padding: 3px;
+      border-radius: 99px;
+      border: 1px solid var(--gold-dim);
+      backdrop-filter: blur(10px);
+    }
+
+    .pill-tab {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.66rem;
+      font-weight: 600;
+      padding: 4px 9px;
+      border-radius: 99px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .pill-tab.active {
+      background: linear-gradient(135deg, var(--crimson), #9b031e);
+      color: #fff;
+      box-shadow: 0 0 10px var(--crimson-glow);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .audio-toggle.muted {
+      opacity: 0.5;
+      color: var(--text-muted);
+    }
+
+    .google-avatar-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1.5px solid var(--gold);
+      background: var(--glass);
+      color: var(--gold);
+      font-size: 0.78rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      overflow: hidden;
+      padding: 0;
+    }
+    .google-avatar-btn img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* WORKSPACE UTAMA */
+    .workspace {
+      flex: 1;
+      width: 100%;
+      max-width: 1080px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 18px;
+      gap: 14px;
+      z-index: 2;
+      overflow: hidden;
+    }
+
+    @media (orientation: landscape) and (min-width: 768px) {
+      .workspace {
+        flex-direction: row;
+        justify-content: space-evenly;
+        padding: 10px 32px;
+      }
+      .stage-col { flex: 0 0 auto; }
+      .chat-col { flex: 1; max-width: 460px; }
+    }
+
+    .stage-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #zafkiel-stage {
+      position: relative;
+      width: min(250px, 60vw);
+      height: min(250px, 60vw);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .clock-outer {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 1px solid var(--gold-dim);
+      box-shadow: 0 0 50px rgba(217, 4, 41, 0.22), inset 0 0 30px rgba(217, 4, 41, 0.16);
+      animation: rotateClockwise 48s linear infinite;
+    }
+
+    .clock-inner {
+      position: absolute;
+      inset: 24px;
+      border-radius: 50%;
+      border: 1.5px dashed rgba(224, 184, 76, 0.45);
+      animation: rotateCounter 32s linear infinite;
+    }
+
+    .roman-num {
+      position: absolute;
+      width: 24px;
+      height: 18px;
+      text-align: center;
+      line-height: 18px;
+      font-family: 'Cinzel', serif;
+      font-size: 0.65rem;
+      color: var(--gold);
+      opacity: 0.88;
+      animation: rotateCounter 48s linear infinite;
+    }
+
+    .avatar-core {
+      position: relative;
+      width: 56%;
+      height: 56%;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #c40828 0%, #520413 65%, #1c0207 100%);
+      border: 2px solid var(--gold);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 36px var(--crimson-glow), inset 0 0 22px rgba(0,0,0,0.75);
+      transition: transform 0.06s ease-out, box-shadow 0.08s ease-out;
+    }
+
+    .avatar-core.idle-heartbeat {
+      animation: idleHeart 2.8s infinite ease-in-out;
+    }
+
+    .avatar-core.listening {
+      border-color: #ff4d6d;
+      box-shadow: 0 0 50px rgba(255, 77, 109, 0.8);
+    }
+
+    .core-emblem {
+      font-family: 'Cinzel', serif;
+      font-size: 1.55rem;
+      font-weight: 700;
+      color: var(--gold);
+    }
+
+    .wave-bars {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      height: 16px;
+      margin-top: 6px;
+    }
+
+    .wave-bars span {
+      width: 3px;
+      height: 5px;
+      background: var(--gold);
+      border-radius: 99px;
+      transition: height 0.08s ease;
+    }
+
+    .avatar-core.listening .wave-bars span {
+      animation: waveDance 0.55s infinite ease-in-out alternate;
+    }
+
+    #live2d-stage {
+      display: none;
+      width: min(270px, 68vw);
+      height: min(290px, 42dvh);
+      border-radius: 24px;
+      border: 1px solid var(--gold-dim);
+      background: radial-gradient(circle at 50% 40%, rgba(217, 4, 41, 0.16), rgba(12, 6, 9, 0.85));
+      position: relative;
+      overflow: hidden;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      text-align: center;
+      padding: 16px;
+    }
+
+    #live2d-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .live2d-placeholder {
+      z-index: 2;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      line-height: 1.5;
+    }
+
+    .live2d-placeholder strong {
+      display: block;
+      color: var(--gold);
+      font-family: 'Cinzel', serif;
+      font-size: 0.95rem;
+      margin-bottom: 4px;
+    }
+
+    #state-text {
+      margin-top: 12px;
+      font-size: 0.7rem;
+      letter-spacing: 1.3px;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: 0.85;
+      text-align: center;
+    }
+
+    .chat-col {
+      width: 100%;
+      max-width: 500px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #user-transcript {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      min-height: 18px;
+      text-align: center;
+    }
+
+    .subtitle-card {
+      width: 100%;
+      max-height: 22dvh;
+      overflow-y: auto;
+      background: linear-gradient(180deg, rgba(28, 12, 18, 0.78), rgba(12, 6, 9, 0.9));
+      border: 1px solid rgba(224, 184, 76, 0.22);
+      border-radius: 20px;
+      padding: 14px 18px;
+      backdrop-filter: blur(14px);
+      box-shadow: 0 8px 26px rgba(0, 0, 0, 0.55);
+      text-align: center;
+    }
+
+    #aira-subtitle {
+      font-size: 0.92rem;
+      line-height: 1.55;
+      color: var(--text-main);
+      text-align: center;
+    }
+
+    #aira-speech-sub {
+      font-size: 0.75rem;
+      color: var(--gold);
+      margin-top: 5px;
+      text-align: center;
+      display: none;
+    }
+
+    #vision-box {
+      position: fixed;
+      top: 64px;
+      right: 16px;
+      width: 96px;
+      height: 128px;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1.5px solid var(--gold);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.75);
+      display: none;
+      background: #000;
+      z-index: 15;
+    }
+    #vision-box video { width: 100%; height: 100%; object-fit: cover; }
+
+    footer {
+      width: 100%;
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 8px 16px 18px;
+      z-index: 10;
+    }
+
+    .unified-bar {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(18, 9, 13, 0.9);
+      border: 1px solid var(--gold-dim);
+      border-radius: 99px;
+      padding: 5px 6px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.65);
+    }
+
+    .bar-icon {
+      width: 38px;
+      height: 38px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .bar-icon svg, .mic-compact svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .bar-icon.active {
+      background: rgba(217, 4, 41, 0.28);
+      color: #ff758f;
+    }
+
+    .unified-bar input {
+      flex: 1;
+      min-width: 0;
+      background: transparent;
+      border: none;
+      color: var(--text-main);
+      font-size: 0.85rem;
+      padding: 0 6px;
+      outline: none;
+    }
+    .unified-bar input::placeholder { color: var(--text-muted); }
+
+    .mic-compact {
+      width: 42px;
+      height: 42px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      border: 1.5px solid var(--gold);
+      background: linear-gradient(145deg, #d90429, #750217);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 0 14px var(--crimson-glow);
+      transition: 0.2s;
+    }
+
+    .mic-compact.listening {
+      background: #ef233c;
+      animation: micRipple 1.2s infinite;
+    }
+
+    .send-compact {
+      width: 38px;
+      height: 38px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      border: none;
+      background: rgba(224, 184, 76, 0.16);
+      color: var(--gold);
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    #stop-btn {
+      display: none;
+      background: rgba(217, 4, 41, 0.25);
+      color: #ff6b81;
+    }
+    #stop-btn.visible { display: flex; }
+
+    @keyframes rotateClockwise { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes rotateCounter { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
+    @keyframes idleHeart {
+      0%, 100% { transform: scale(1); }
+      14% { transform: scale(1.035); }
+      28% { transform: scale(1); }
+      42% { transform: scale(1.022); }
+      70% { transform: scale(1); }
+    }
+    @keyframes waveDance { from { height: 4px; } to { height: 15px; } }
+    @keyframes micRipple {
+      0% { box-shadow: 0 0 0 0 rgba(239, 35, 60, 0.75); }
+      70% { box-shadow: 0 0 0 12px rgba(239, 35, 60, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(239, 35, 60, 0); }
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="bg-particles"></canvas>
+
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+  <aside id="history-drawer">
+    <button type="button" class="new-chat-btn" id="new-session-btn">
+      <span>＋</span> Sesi Obrolan Baru
+    </button>
+    <div class="drawer-label">Riwayat Sesi</div>
+    <div class="session-list" id="session-list"></div>
+
+    <div class="drawer-footer">
+      <div id="g-signin-box"></div>
+      <div class="account-pill" id="account-pill" style="display:none;">
+        <div class="account-info">
+          <img id="drawer-avatar" src="" alt="User" />
+          <span id="drawer-username" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></span>
+        </div>
+        <button type="button" class="logout-btn" id="logout-btn">Keluar</button>
+      </div>
+    </div>
+  </aside>
+
+  <header>
+    <div class="header-left">
+      <button type="button" class="icon-btn" id="menu-btn" title="Riwayat Sesi">☰</button>
+      <span class="brand-title">AIRA</span>
+    </div>
+
+    <div class="pill-group">
+      <button type="button" class="pill-tab active" data-mode="zafkiel">ZAFKIEL</button>
+      <button type="button" class="pill-tab" data-mode="live2d">LIVE2D</button>
+    </div>
+
+    <div class="header-right">
+      <button type="button" class="icon-btn audio-toggle" id="audio-toggle" title="Suara On/Off">🔊</button>
+      <div class="pill-group">
+        <button type="button" class="pill-tab active" data-lang="id">ID</button>
+        <button type="button" class="pill-tab" data-lang="en">EN</button>
+        <button type="button" class="pill-tab" data-lang="ja">JP</button>
+      </div>
+      <button type="button" class="google-avatar-btn" id="profile-btn" title="Masuk dengan Akun Google">G</button>
+    </div>
+  </header>
+
+  <div id="vision-box">
+    <video id="vision-video" autoplay playsinline muted></video>
+  </div>
+
+  <div class="workspace">
+    <div class="stage-col">
+      <div id="zafkiel-stage">
+        <div class="clock-outer" id="clock-ring"></div>
+        <div class="clock-inner"></div>
+        <div class="avatar-core idle-heartbeat" id="avatar-core">
+          <div class="core-emblem">XII</div>
+          <div class="wave-bars" id="wave-bars">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+      </div>
+
+      <div id="live2d-stage">
+        <canvas id="live2d-canvas"></canvas>
+        <div class="live2d-placeholder" id="live2d-placeholder">
+          <strong>Mode Live2D Kurumi</strong>
+          Slot model siap dipasang di folder <code>public/models/</code>.<br>
+          Sementara gunakan mode Zafkiel atau masukkan file <code>.model3.json</code>.
+        </div>
+      </div>
+
+      <div id="state-text">Menunggu Perintah</div>
+    </div>
+
+    <div class="chat-col">
+      <div id="user-transcript"></div>
+      <div class="subtitle-card">
+        <div id="aira-subtitle">Selamat datang di ruang Aira. Klik ikon G di kanan atas untuk masuk dengan Google~</div>
+        <div id="aira-speech-sub"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="unified-bar">
+      <button type="button" class="bar-icon" id="cam-btn" title="Kamera Vision">
+        <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      </button>
+
+      <button type="button" class="bar-icon" id="screen-btn" title="Share Screen">
+        <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      </button>
+
+      <input type="text" id="chat-input" placeholder="Ketik atau bicara ke Aira..." autocomplete="off" />
+
+      <button type="button" class="bar-icon" id="stop-btn" title="Hentikan Suara/Kamera">
+        <svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+      </button>
+
+      <button type="button" class="mic-compact" id="mic-btn" title="Bicara">
+        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+      </button>
+
+      <button type="button" class="send-compact" id="send-btn" title="Kirim">➤</button>
+    </div>
+  </footer>
+
+  <canvas id="capture-canvas" style="display:none;"></canvas>
+
+  <script>
+    // Kosongkan ("") jika dilayani langsung oleh server yang sama,
+    // atau isi dengan URL backend (tanpa slash di akhir), contoh: "https://aira-backend.up.railway.app"
+    const BACKEND_URL = '';
+
+    let currentLang = 'id';
+    let visualMode = 'zafkiel';
+    let muteAudio = false;
+    let visionStream = null;
+    let isListening = false;
+    let currentSessionId = 'session_' + Date.now();
+    let googleIdToken = localStorage.getItem('aira_google_token') || '';
+    let isVerifiedOwner = false;
+    let cachedClientId = '';
+
+    // Tangkap id_token jika kembali dari redirect Google
+    if (window.location.hash.includes('id_token=')) {
+      const params = new URLSearchParams(window.location.hash.substring(1));
+      const tokenFromUrl = params.get('id_token');
+      if (tokenFromUrl) {
+        googleIdToken = tokenFromUrl;
+        localStorage.setItem('aira_google_token', googleIdToken);
+        history.replaceState(null, '', window.location.pathname);
+      }
+    }
+
+    const currentAudio = new Audio();
+    currentAudio.crossOrigin = 'anonymous';
+
+    const stateText = document.getElementById('state-text');
+    const avatarCore = document.getElementById('avatar-core');
+    const waveSpans = document.querySelectorAll('#wave-bars span');
+    const userTranscript = document.getElementById('user-transcript');
+    const airaSubtitle = document.getElementById('aira-subtitle');
+    const airaSpeechSub = document.getElementById('aira-speech-sub');
+    const visionBox = document.getElementById('vision-box');
+    const visionVideo = document.getElementById('vision-video');
+    const captureCanvas = document.getElementById('capture-canvas');
+    const micBtn = document.getElementById('mic-btn');
+    const stopBtn = document.getElementById('stop-btn');
+    const audioToggleBtn = document.getElementById('audio-toggle');
+    const profileBtn = document.getElementById('profile-btn');
+
+    function updateStopButtonVisibility() {
+      const isSpeaking = !currentAudio.paused && currentAudio.currentTime > 0;
+      const hasVision = Boolean(visionStream);
+      stopBtn.classList.toggle('visible', isSpeaking || hasVision);
+    }
+
+    function handleGoogleCredentialResponse(response) {
+      googleIdToken = response.credential;
+      localStorage.setItem('aira_google_token', googleIdToken);
+      syncServerConfig(true);
+    }
+
+    function initGoogleIdentity(clientId) {
+      cachedClientId = clientId || cachedClientId;
+      if (!cachedClientId || !window.google || !google.accounts) return;
+
+      google.accounts.id.initialize({
+        client_id: cachedClientId,
+        callback: handleGoogleCredentialResponse,
+        use_fedcm_for_prompt: false
+      });
+
+      const box = document.getElementById('g-signin-box');
+      if (box) {
+        box.innerHTML = '';
+        google.accounts.id.renderButton(box, {
+          theme: 'filled_black',
+          size: 'large',
+          shape: 'pill',
+          text: 'signin_with',
+          width: 240
+        });
+      }
+    }
+
+    profileBtn.addEventListener('click', () => {
+      if (!cachedClientId) {
+        alert('GOOGLE_CLIENT_ID belum terbaca dari .env. Pastikan sudah disimpan di .env lalu restart node index.js.');
+        return;
+      }
+      if (!window.google || !google.accounts) {
+        alert('Skrip Google Login belum selesai dimuat. Tunggu 2 detik lalu klik lagi.');
+        return;
+      }
+
+      google.accounts.id.prompt((notification) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          const redirectUri = encodeURIComponent(window.location.origin);
+          const scope = encodeURIComponent('openid email profile');
+          window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${cachedClientId}&redirect_uri=${redirectUri}&response_type=token%20id_token&scope=${scope}&nonce=${Date.now()}&prompt=select_account`;
+        }
+      });
+    });
+
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      googleIdToken = '';
+      isVerifiedOwner = false;
+      localStorage.removeItem('aira_google_token');
+      profileBtn.innerHTML = 'G';
+      document.getElementById('account-pill').style.display = 'none';
+      document.getElementById('g-signin-box').style.display = 'block';
+      airaSubtitle.textContent = 'Kamu telah keluar. Mode Tamu aktif.';
+      toggleDrawer(false);
+    });
+
+    async function syncServerConfig(justLoggedIn = false) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/live-config`, {
+          headers: googleIdToken ? { 'x-google-token': googleIdToken } : {}
+        });
+        const cfg = await res.json();
+
+        if (cfg.googleClientId) {
+          cachedClientId = cfg.googleClientId;
+          setTimeout(() => initGoogleIdentity(cfg.googleClientId), 300);
+        }
+
+        isVerifiedOwner = Boolean(cfg.isOwner);
+        if (cfg.userPicture) {
+          profileBtn.innerHTML = `<img src="${cfg.userPicture}" alt="Profil" />`;
+          document.getElementById('drawer-avatar').src = cfg.userPicture;
+          document.getElementById('drawer-username').textContent = cfg.userName || 'Akun Google';
+          document.getElementById('account-pill').style.display = 'flex';
+          document.getElementById('g-signin-box').style.display = 'none';
+        }
+
+        if (justLoggedIn) {
+          airaSubtitle.textContent = isVerifiedOwner
+            ? 'Ara, selamat datang kembali, Neruru~ Ruang khusus kita sudah terbuka.'
+            : `Halo ${cfg.userName || 'Tamu'}, senang bertemu denganmu. Ada yang bisa Aira bantu?`;
+        } else if (isVerifiedOwner) {
+          airaSubtitle.textContent = 'Ara, akhirnya kamu membuka ruang khusus untuk kita berdua, Neruru~';
+        }
+
+        if (cfg.voiceChatEnabled === false) {
+          muteAudio = true;
+          audioToggleBtn.textContent = '🔇';
+          audioToggleBtn.classList.add('muted');
+        }
+        if (cfg.language) setLanguageUI(cfg.language, false);
+      } catch (_) {}
+    }
+
+    const drawer = document.getElementById('history-drawer');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    const sessionListEl = document.getElementById('session-list');
+
+    function toggleDrawer(open) {
+      drawer.classList.toggle('open', open);
+      backdrop.classList.toggle('open', open);
+      if (open) loadSessionsList();
+    }
+
+    document.getElementById('menu-btn').addEventListener('click', () => toggleDrawer(true));
+    backdrop.addEventListener('click', () => toggleDrawer(false));
+
+    document.getElementById('new-session-btn').addEventListener('click', () => {
+      currentSessionId = 'session_' + Date.now();
+      userTranscript.textContent = '';
+      airaSubtitle.textContent = isVerifiedOwner
+        ? 'Sesi baru dimulai, Neruru~ Tenang saja, Aira tetap mengingat semua cerita kita sebelumnya.'
+        : 'Sesi obrolan baru dimulai. Silakan sampaikan pertanyaanmu.';
+      airaSpeechSub.style.display = 'none';
+      toggleDrawer(false);
+    });
+
+    async function loadSessionsList() {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/sessions`, {
+          headers: googleIdToken ? { 'x-google-token': googleIdToken } : {}
+        });
+        const data = await res.json();
+        sessionListEl.innerHTML = '';
+        if (!isVerifiedOwner) {
+          sessionListEl.innerHTML = '<div style="font-size:0.76rem;color:#9e8a92;padding:8px;">Masuk dengan akun Google Neruru untuk melihat riwayat sesi tersimpan.</div>';
+          return;
+        }
+        if (!data.sessions || data.sessions.length === 0) {
+          sessionListEl.innerHTML = '<div style="font-size:0.76rem;color:#77666d;padding:8px;">Belum ada riwayat sesi tersimpan.</div>';
+          return;
+        }
+        data.sessions.forEach(s => {
+          const item = document.createElement('div');
+          item.className = 'session-item' + (s.id === currentSessionId ? ' active' : '');
+          item.textContent = s.title || 'Obrolan dengan Aira';
+          item.addEventListener('click', () => openSession(s.id));
+          sessionListEl.appendChild(item);
+        });
+      } catch (_) {}
+    }
+
+    async function openSession(id) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/sessions/${id}`, {
+          headers: googleIdToken ? { 'x-google-token': googleIdToken } : {}
+        });
+        const data = await res.json();
+        if (!data.session) return;
+        currentSessionId = id;
+        const msgs = data.session.messages || [];
+        const lastUser = [...msgs].reverse().find(m => m.role === 'user');
+        const lastAi = [...msgs].reverse().find(m => m.role === 'ai');
+        userTranscript.textContent = lastUser ? `Kamu: "${lastUser.text}"` : '';
+        airaSubtitle.textContent = lastAi ? lastAi.text : 'Sesi dimuat.';
+        toggleDrawer(false);
+      } catch (_) {}
+    }
+
+    document.querySelectorAll('[data-mode]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        visualMode = btn.dataset.mode;
+        document.querySelectorAll('[data-mode]').forEach(b => b.classList.toggle('active', b.dataset.mode === visualMode));
+        document.getElementById('zafkiel-stage').style.display = visualMode === 'zafkiel' ? 'flex' : 'none';
+        document.getElementById('live2d-stage').style.display = visualMode === 'live2d' ? 'flex' : 'none';
+      });
+    });
+
+    let audioCtx = null;
+    let analyser = null;
+    let dataArray = null;
+    let beatRaf = null;
+
+    function initAudioAnalyser() {
+      if (audioCtx) return;
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AudioContext();
+      const source = audioCtx.createMediaElementSource(currentAudio);
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 64;
+      source.connect(analyser);
+      analyser.connect(audioCtx.destination);
+      dataArray = new Uint8Array(analyser.frequencyBinCount);
+    }
+
+    function startHeartbeatPulse() {
+      avatarCore.classList.remove('idle-heartbeat');
+      updateStopButtonVisibility();
+      function tick() {
+        if (!analyser || currentAudio.paused) return;
+        analyser.getByteFrequencyData(dataArray);
+        let sum = 0;
+        for (let i = 0; i < 12; i++) sum += dataArray[i];
+        const avg = sum / 12;
+        const scale = 1 + (avg / 255) * 0.22;
+        const glow = 36 + (avg / 255) * 52;
+        avatarCore.style.transform = `scale(${scale.toFixed(3)})`;
+        avatarCore.style.boxShadow = `0 0 ${glow.toFixed(0)}px rgba(239, 35, 60, 0.9), 0 0 20px rgba(224, 184, 76, 0.45)`;
+
+        waveSpans.forEach((bar, idx) => {
+          const val = dataArray[idx * 2] || 0;
+          bar.style.height = `${Math.max(4, Math.round((val / 255) * 16))}px`;
+        });
+        beatRaf = requestAnimationFrame(tick);
+      }
+      beatRaf = requestAnimationFrame(tick);
+    }
+
+    function stopHeartbeatPulse() {
+      if (beatRaf) cancelAnimationFrame(beatRaf);
+      avatarCore.style.transform = '';
+      avatarCore.style.boxShadow = '';
+      waveSpans.forEach(bar => (bar.style.height = '5px'));
+      avatarCore.classList.add('idle-heartbeat');
+      updateStopButtonVisibility();
+    }
+
+    function renderClockNumerals() {
+      const clockRing = document.getElementById('clock-ring');
+      clockRing.innerHTML = '';
+      const size = clockRing.offsetWidth || 250;
+      const center = size / 2;
+      const radius = center - 16;
+      const numerals = ['XII','I','II','III','IV','V','VI','VII','VIII','IX','X','XI'];
+      numerals.forEach((num, idx) => {
+        const angle = (idx * 30 - 90) * (Math.PI / 180);
+        const el = document.createElement('span');
+        el.className = 'roman-num';
+        el.textContent = num;
+        el.style.left = `${center + radius * Math.cos(angle) - 12}px`;
+        el.style.top = `${center + radius * Math.sin(angle) - 9}px`;
+        clockRing.appendChild(el);
+      });
+    }
+    window.addEventListener('resize', renderClockNumerals);
+    renderClockNumerals();
+
+    const pCanvas = document.getElementById('bg-particles');
+    const pCtx = pCanvas.getContext('2d');
+    let particles = [];
+    function resizeParticles() {
+      pCanvas.width = window.innerWidth;
+      pCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeParticles);
+    resizeParticles();
+
+    for (let i = 0; i < 22; i++) {
+      particles.push({
+        x: Math.random() * pCanvas.width,
+        y: Math.random() * pCanvas.height,
+        r: Math.random() * 2 + 0.8,
+        vy: -(Math.random() * 0.35 + 0.15),
+        alpha: Math.random() * 0.6 + 0.2
+      });
+    }
+
+    function animateParticles() {
+      pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+      particles.forEach(p => {
+        p.y += p.vy;
+        if (p.y < 0) p.y = pCanvas.height;
+        pCtx.beginPath();
+        pCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        pCtx.fillStyle = `rgba(217, 4, 41, ${p.alpha})`;
+        pCtx.fill();
+      });
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+
+    audioToggleBtn.addEventListener('click', () => {
+      muteAudio = !muteAudio;
+      audioToggleBtn.textContent = muteAudio ? '🔇' : '🔊';
+      audioToggleBtn.classList.toggle('muted', muteAudio);
+      if (muteAudio) {
+        currentAudio.pause();
+        stopHeartbeatPulse();
+      }
+    });
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = SpeechRecognition ? new SpeechRecognition() : null;
+
+    function setLanguageUI(lang, showNotice = true) {
+      currentLang = lang;
+      document.querySelectorAll('[data-lang]').forEach(b => {
+        b.classList.toggle('active', b.dataset.lang === lang);
+      });
+      if (recognition) {
+        recognition.lang = lang === 'ja' ? 'ja-JP' : lang === 'en' ? 'en-US' : 'id-ID';
+      }
+      if (showNotice) {
+        const label = lang === 'ja' ? 'Bahasa Jepang (JP)' : lang === 'en' ? 'Bahasa Inggris (EN)' : 'Bahasa Indonesia (ID)';
+        stateText.textContent = `Mode: ${label}`;
+      }
+    }
+
+    document.querySelectorAll('[data-lang]').forEach(btn => {
+      btn.addEventListener('click', () => setLanguageUI(btn.dataset.lang, true));
+    });
+
+    document.getElementById('send-btn').addEventListener('click', () => {
+      const input = document.getElementById('chat-input');
+      if (!input.value.trim()) return;
+      sendToAira(input.value.trim());
+      input.value = '';
+    });
+
+    document.getElementById('chat-input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') document.getElementById('send-btn').click();
+    });
+
+    async function startVision(mode) {
+      stopVision();
+      try {
+        visionStream = mode === 'camera'
+          ? await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
+          : await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+
+        visionVideo.srcObject = visionStream;
+        visionBox.style.display = 'block';
+        document.getElementById(mode === 'camera' ? 'cam-btn' : 'screen-btn').classList.add('active');
+        updateStopButtonVisibility();
+      } catch (err) {
+        alert('Izin kamera/layar ditolak atau tidak didukung browser ini.');
+      }
+    }
+
+    function stopVision() {
+      if (visionStream) {
+        visionStream.getTracks().forEach(t => t.stop());
+        visionStream = null;
+      }
+      visionBox.style.display = 'none';
+      document.getElementById('cam-btn').classList.remove('active');
+      document.getElementById('screen-btn').classList.remove('active');
+      updateStopButtonVisibility();
+    }
+
+    function grabFrameBase64() {
+      if (!visionStream || visionVideo.videoWidth === 0) return null;
+      captureCanvas.width = 640;
+      captureCanvas.height = Math.round((visionVideo.videoHeight / visionVideo.videoWidth) * 640);
+      const ctx = captureCanvas.getContext('2d');
+      ctx.drawImage(visionVideo, 0, 0, captureCanvas.width, captureCanvas.height);
+      return captureCanvas.toDataURL('image/jpeg', 0.72);
+    }
+
+    document.getElementById('cam-btn').addEventListener('click', () => {
+      if (document.getElementById('cam-btn').classList.contains('active')) stopVision();
+      else startVision('camera');
+    });
+
+    document.getElementById('screen-btn').addEventListener('click', () => {
+      if (document.getElementById('screen-btn').classList.contains('active')) stopVision();
+      else startVision('screen');
+    });
+
+    stopBtn.addEventListener('click', () => {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+      stopHeartbeatPulse();
+      avatarCore.classList.remove('listening');
+      stopVision();
+      stateText.textContent = 'Menunggu Perintah';
+    });
+
+    if (recognition) {
+      recognition.lang = 'id-ID';
+      recognition.interimResults = false;
+
+      recognition.onstart = () => {
+        isListening = true;
+        micBtn.classList.add('listening');
+        avatarCore.classList.add('listening');
+        stateText.textContent = 'Mendengarkan...';
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript.trim();
+        if (transcript) sendToAira(transcript);
+      };
+
+      recognition.onerror = () => {
+        avatarCore.classList.remove('listening');
+        stateText.textContent = 'Menunggu Perintah';
+      };
+
+      recognition.onend = () => {
+        isListening = false;
+        micBtn.classList.remove('listening');
+        avatarCore.classList.remove('listening');
+      };
+    }
+
+    micBtn.addEventListener('click', () => {
+      if (!recognition) {
+        alert('Browser ini belum mendukung mic langsung. Gunakan kolom ketik di sampingnya.');
+        return;
+      }
+      if (isListening) recognition.stop();
+      else recognition.start();
+    });
+
+    async function sendToAira(text) {
+      userTranscript.textContent = `Kamu: "${text}"`;
+      stateText.textContent = 'Memproses Waktu...';
+      const frame = grabFrameBase64();
+
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/live-talk`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(googleIdToken ? { 'x-google-token': googleIdToken } : {})
+          },
+          body: JSON.stringify({
+            text,
+            imageBase64: frame,
+            lang: currentLang,
+            muteAudio,
+            sessionId: currentSessionId,
+            googleToken: googleIdToken
+          })
+        });
+
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+
+        airaSubtitle.textContent = data.subtitle || data.speech;
+
+        if (currentLang !== 'id' && data.speech && data.speech !== data.subtitle) {
+          airaSpeechSub.style.display = 'block';
+          airaSpeechSub.textContent = data.speech;
+        } else {
+          airaSpeechSub.style.display = 'none';
+        }
+
+        if (data.audioBase64 && !muteAudio) {
+          initAudioAnalyser();
+          if (audioCtx.state === 'suspended') await audioCtx.resume();
+
+          currentAudio.src = data.audioBase64;
+          currentAudio.onplay = () => {
+            stateText.textContent = 'Aira Berbicara';
+            startHeartbeatPulse();
+          };
+          currentAudio.onended = () => {
+            stopHeartbeatPulse();
+            stateText.textContent = 'Menunggu Perintah';
+          };
+          await currentAudio.play();
+        } else {
+          stateText.textContent = 'Menunggu Perintah';
+        }
+      } catch (err) {
+        airaSubtitle.textContent = 'Maaf, koneksi Aira terganggu sebentar...';
+        stateText.textContent = 'Terputus';
+      }
+    }
+
+    window.addEventListener('load', () => syncServerConfig(false));
+  </script>
+</body>
+</html>
