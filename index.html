@@ -408,7 +408,6 @@
       pointer-events: none;
     }
 
-    /* Saat Mode Live2D aktif di Portrait (HP), taruh kotak teks di bawah agar tidak menutupi wajah/badan Kurumi */
     body.mode-live2d .workspace {
       justify-content: flex-end;
       padding-bottom: 8px;
@@ -575,17 +574,29 @@
       z-index: 8;
     }
 
+    /* KOTAK PESAN USER (BERKOTAK KACA SERASI) */
     #user-transcript {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      margin-bottom: 6px;
-      min-height: 18px;
+      font-size: 0.76rem;
+      color: #ffe5ec;
+      margin-bottom: 8px;
+      max-width: 92%;
+      padding: 6px 14px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(45, 10, 20, 0.85), rgba(16, 7, 11, 0.92));
+      border: 1px solid rgba(217, 4, 41, 0.42);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
       text-align: center;
-      display: inline-flex;
+      display: none;
       align-items: center;
       justify-content: center;
       gap: 6px;
-      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+      word-break: break-word;
+    }
+
+    #user-transcript.visible {
+      display: inline-flex;
     }
 
     .rec-badge {
@@ -973,6 +984,7 @@
     const stateText = document.getElementById('state-text');
     const avatarCore = document.getElementById('avatar-core');
     const waveSpans = document.querySelectorAll('#wave-bars span');
+    const userTranscriptBox = document.getElementById('user-transcript');
     const transcriptTextEl = document.getElementById('transcript-text');
     const recBadgeEl = document.getElementById('rec-badge');
     const recLabelEl = document.getElementById('rec-label');
@@ -985,6 +997,12 @@
     const stopBtn = document.getElementById('stop-btn');
     const audioToggleBtn = document.getElementById('audio-toggle');
     const profileBtn = document.getElementById('profile-btn');
+
+    function setUserTranscript(text) {
+      transcriptTextEl.textContent = text || '';
+      const hasContent = Boolean(text) || recBadgeEl.classList.contains('active');
+      userTranscriptBox.classList.toggle('visible', hasContent);
+    }
 
     async function setOverlayState(active) {
       try {
@@ -1015,10 +1033,12 @@
       if (!mode) {
         recBadgeEl.classList.remove('active');
         recLabelEl.textContent = '';
+        userTranscriptBox.classList.toggle('visible', Boolean(transcriptTextEl.textContent));
         return;
       }
       recBadgeEl.classList.add('active');
       recLabelEl.textContent = mode === 'recording' ? 'Merekam...' : 'Mengirim...';
+      userTranscriptBox.classList.add('visible');
     }
 
     function applyUserProfileUI(profile) {
@@ -1293,7 +1313,7 @@
         sessionHistories[currentSessionId] = [];
         saveSessionHistories();
       }
-      transcriptTextEl.textContent = '';
+      setUserTranscript('');
       setRecAnimation(null);
       airaSubtitle.textContent = isVerifiedOwner
         ? 'Sesi baru dimulai, Neruru~ Tenang saja, Aira tetap mengingat semua cerita kita sebelumnya.'
@@ -1347,7 +1367,7 @@
         }
         const lastUser = [...msgs].reverse().find(m => m.role === 'user');
         const lastAi = [...msgs].reverse().find(m => m.role === 'ai');
-        transcriptTextEl.textContent = lastUser ? `Kamu: "${lastUser.text}"` : '';
+        setUserTranscript(lastUser ? `Kamu: "${lastUser.text}"` : '');
         airaSubtitle.textContent = lastAi ? lastAi.text : 'Sesi dimuat.';
         renderCurrentSessionChat();
         toggleDrawer(false);
@@ -1817,7 +1837,7 @@
     });
 
     async function sendToAira(text, fromVoice = false) {
-      transcriptTextEl.textContent = `Kamu: "${text}"`;
+      setUserTranscript(`Kamu: "${text}"`);
       if (fromVoice) {
         setRecAnimation('sending');
       }
