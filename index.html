@@ -7,6 +7,10 @@
   <title>Aira Live</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <!-- Live2D Cubism Core, PixiJS v6, & pixi-live2d-display -->
+  <script src="https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pixi.js@6.5.10/dist/browser/pixi.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pixi-live2d-display@0.4.0/dist/cubism4.min.js"></script>
   <style>
     :root {
       --bg-void: #080507;
@@ -359,11 +363,9 @@
       gap: 6px;
     }
 
-    /* Tombol Voice TTS disembunyikan & dimatikan agar kredit aman */
-    .audio-toggle,
-    #audio-toggle {
-      display: none !important;
-      pointer-events: none;
+    .audio-toggle.muted {
+      opacity: 0.65;
+      color: var(--text-muted);
     }
 
     .google-avatar-btn {
@@ -402,6 +404,7 @@
       gap: 14px;
       z-index: 2;
       overflow: hidden;
+      pointer-events: none;
     }
 
     @media (orientation: landscape) and (min-width: 768px) {
@@ -410,7 +413,7 @@
         justify-content: space-evenly;
         padding: 10px 32px;
       }
-      .stage-col { flex: 0 0 auto; }
+      .stage-col { flex: 0 0 auto; min-width: 260px; }
       .chat-col { flex: 1; max-width: 460px; }
     }
 
@@ -428,6 +431,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      pointer-events: auto;
     }
 
     .clock-outer {
@@ -511,20 +515,20 @@
       animation: waveDance 0.55s infinite ease-in-out alternate;
     }
 
+    /* LIVE2D FULL-SCREEN TANPA KOTAK */
     #live2d-stage {
       display: none;
-      width: min(270px, 68vw);
-      height: min(290px, 42dvh);
-      border-radius: 24px;
-      border: 1px solid var(--gold-dim);
-      background: radial-gradient(circle at 50% 40%, rgba(217, 4, 41, 0.16), rgba(12, 6, 9, 0.85));
-      position: relative;
-      overflow: hidden;
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100dvh;
+      border: none;
+      border-radius: 0;
+      background: transparent;
+      pointer-events: auto;
+      z-index: 1;
       align-items: center;
       justify-content: center;
-      flex-direction: column;
-      text-align: center;
-      padding: 16px;
     }
 
     #live2d-canvas {
@@ -539,6 +543,8 @@
       color: var(--text-muted);
       font-size: 0.78rem;
       line-height: 1.5;
+      text-align: center;
+      padding: 16px;
     }
 
     .live2d-placeholder strong {
@@ -550,7 +556,7 @@
     }
 
     #state-text {
-      margin-top: 12px;
+      margin-top: 10px;
       font-size: 0.7rem;
       letter-spacing: 1.3px;
       text-transform: uppercase;
@@ -565,6 +571,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      pointer-events: auto;
     }
 
     #user-transcript {
@@ -709,7 +716,6 @@
     }
     .unified-bar input::placeholder { color: var(--text-muted); }
 
-    /* Mic dibuat seragam dengan tombol lain dan hanya aktif saat diklik */
     .mic-compact {
       width: 38px;
       height: 38px;
@@ -815,7 +821,7 @@
     </div>
 
     <div class="header-right">
-      <button type="button" class="icon-btn audio-toggle muted" id="audio-toggle" title="Voice Nonaktif" disabled aria-hidden="true">🔇</button>
+      <button type="button" class="icon-btn audio-toggle muted" id="audio-toggle" title="Toggle Suara Web">🔇</button>
       <div class="pill-group">
         <button type="button" class="pill-tab active" data-lang="id">ID</button>
         <button type="button" class="pill-tab" data-lang="en">EN</button>
@@ -846,12 +852,9 @@
         <canvas id="live2d-canvas"></canvas>
         <div class="live2d-placeholder" id="live2d-placeholder">
           <strong>Mode Live2D Kurumi</strong>
-          Slot model siap dipasang di folder <code>public/models/</code>.<br>
-          Sementara gunakan mode Zafkiel atau masukkan file <code>.model3.json</code>.
+          Klik tab LIVE2D untuk memuat model <code>Tokisaki Kurumi.model3.json</code>.
         </div>
       </div>
-
-      <div id="state-text">Menunggu Perintah</div>
     </div>
 
     <div class="chat-col">
@@ -863,6 +866,7 @@
         <div id="aira-subtitle">Selamat datang di ruang Aira. Klik ikon G di kanan atas untuk masuk dengan Google~</div>
         <div id="aira-speech-sub"></div>
       </div>
+      <div id="state-text">Menunggu Perintah</div>
     </div>
   </div>
 
@@ -893,8 +897,11 @@
   <canvas id="capture-canvas" style="display:none;"></canvas>
 
   <script>
-    const BACKEND_URL = 'https://yale-nirvana-screening-managers.trycloudflare.com';
-    const VOICE_TTS_ENABLED = false; // Dikunci mati agar kredit voice tidak terpakai
+    const isLocalHost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+    const BACKEND_URL = isLocalHost
+      ? window.location.origin
+      : 'https://alumni-pills-print-brief.trycloudflare.com';
+    const GSV_API_URL = 'https://alumni-pills-print-brief.trycloudflare.com';
     const SESSION_STORAGE_KEY = 'aira_session_histories_v1';
     const USER_CACHE_KEY = 'aira_google_user_v1';
 
@@ -902,6 +909,8 @@
     let visualMode = 'zafkiel';
     let muteAudio = true;
     let visionStream = null;
+    let visionModeActive = null;
+    let liveFrameTimer = null;
     let isListening = false;
     let currentSessionId = 'session_' + Date.now();
     let googleIdToken = localStorage.getItem('aira_google_token') || '';
@@ -910,7 +919,6 @@
     let cachedClientId = '';
     let sessionHistories = JSON.parse(localStorage.getItem(SESSION_STORAGE_KEY) || '{}');
 
-    // Tangkap id_token jika kembali dari redirect Google
     if (window.location.hash.includes('id_token=')) {
       const params = new URLSearchParams(window.location.hash.substring(1));
       const tokenFromUrl = params.get('id_token');
@@ -940,8 +948,32 @@
     const audioToggleBtn = document.getElementById('audio-toggle');
     const profileBtn = document.getElementById('profile-btn');
 
+    async function setOverlayState(active) {
+      try {
+        await fetch(`${BACKEND_URL}/api/overlay/toggle`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            active: Boolean(active),
+            mode: active ? 'live' : 'idle'
+          })
+        });
+      } catch (_) {}
+    }
+
+    function syncAudioToggleUI() {
+      if (muteAudio) {
+        audioToggleBtn.textContent = '🔇';
+        audioToggleBtn.classList.add('muted');
+        audioToggleBtn.title = 'Suara Web Dimatikan (Klik untuk Aktifkan)';
+      } else {
+        audioToggleBtn.textContent = '🔊';
+        audioToggleBtn.classList.remove('muted');
+        audioToggleBtn.title = 'Suara Web Aktif (Klik untuk Matikan)';
+      }
+    }
+
     function setRecAnimation(mode) {
-      // mode: null | 'recording' | 'sending'
       if (!mode) {
         recBadgeEl.classList.remove('active');
         recLabelEl.textContent = '';
@@ -1089,7 +1121,8 @@
 
     function updateStopButtonVisibility() {
       const hasVision = Boolean(visionStream);
-      stopBtn.classList.toggle('visible', hasVision);
+      const isPlayingAudio = !currentAudio.paused && !currentAudio.ended;
+      stopBtn.classList.toggle('visible', hasVision || isPlayingAudio);
     }
 
     function handleGoogleCredentialResponse(response) {
@@ -1122,7 +1155,7 @@
       }
     }
 
-        profileBtn.addEventListener('click', () => {
+    profileBtn.addEventListener('click', () => {
       if (googleIdToken && cachedUserProfile) {
         const label = cachedUserProfile.name || 'Akun Google';
         airaSubtitle.textContent = `Masuk sebagai ${label}.`;
@@ -1138,11 +1171,7 @@
         try {
           initGoogleIdentity(cachedClientId);
           google.accounts.id.prompt();
-        } catch (_) {
-          redirectToGoogleLogin();
-        }
-      } else {
-        redirectToGoogleLogin();
+        } catch (_) {}
       }
     });
 
@@ -1194,9 +1223,7 @@
           airaSubtitle.textContent = 'Ara, akhirnya kamu membuka ruang khusus untuk kita berdua, Neruru~';
         }
 
-        muteAudio = true;
-        audioToggleBtn.textContent = '🔇';
-        audioToggleBtn.classList.add('muted');
+        syncAudioToggleUI();
         if (cfg.language) setLanguageUI(cfg.language, false);
         renderCurrentSessionChat();
       } catch (_) {
@@ -1289,12 +1316,171 @@
       } catch (_) {}
     }
 
+    // ==========================================
+    // LIVE2D RENDERER (HALF-BODY, EYE/HEAD/BODY TRACKING & LIP-SYNC)
+    // ==========================================
+    let live2dApp = null;
+    let live2dModel = null;
+    let mouthAnimFrame = null;
+    let audioCtx = null;
+    let analyserNode = null;
+
+    function setupLive2DLipSync() {
+      if (analyserNode) return;
+      try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContextClass();
+        const source = audioCtx.createMediaElementSource(currentAudio);
+        analyserNode = audioCtx.createAnalyser();
+        analyserNode.fftSize = 256;
+        source.connect(analyserNode);
+        analyserNode.connect(audioCtx.destination);
+      } catch (e) {
+        console.warn('Lip-sync audio analyser dilewati:', e.message);
+      }
+    }
+
+    function startMouthSyncLoop() {
+      if (!analyserNode || !live2dModel) return;
+      const dataArray = new Uint8Array(analyserNode.frequencyBinCount);
+
+      function tick() {
+        if (currentAudio.paused || currentAudio.ended) {
+          try {
+            live2dModel.internalModel.coreModel.setParameterValueById('ParamMouthOpenY', 0);
+          } catch (_) {}
+          return;
+        }
+        analyserNode.getByteFrequencyData(dataArray);
+        let sum = 0;
+        for (let i = 0; i < 24; i++) sum += dataArray[i];
+        const volume = Math.min(1, (sum / 24 / 140) * 1.4);
+
+        try {
+          live2dModel.internalModel.coreModel.setParameterValueById('ParamMouthOpenY', volume);
+        } catch (_) {}
+        mouthAnimFrame = requestAnimationFrame(tick);
+      }
+      cancelAnimationFrame(mouthAnimFrame);
+      tick();
+    }
+
+    async function initLive2DModel() {
+      if (live2dModel) return;
+      const canvasEl = document.getElementById('live2d-canvas');
+      const placeholderEl = document.getElementById('live2d-placeholder');
+
+      if (!window.PIXI || !PIXI.live2d) {
+        placeholderEl.innerHTML = '<strong>Library Live2D Belum Siap</strong>Periksa koneksi internet untuk memuat Cubism SDK.';
+        return;
+      }
+
+      try {
+        placeholderEl.style.position = 'fixed';
+        placeholderEl.style.left = '22%';
+        placeholderEl.style.top = '50%';
+        placeholderEl.style.transform = 'translateY(-50%)';
+        placeholderEl.innerHTML = '<strong>Memuat Model...</strong>Sedang merender Tokisaki Kurumi...';
+
+        live2dApp = new PIXI.Application({
+          view: canvasEl,
+          autoStart: true,
+          backgroundAlpha: 0,
+          resizeTo: window
+        });
+
+        const baseModelUrl = isLocalHost
+          ? '/models/Tokisaki Kurumi.model3.json'
+          : `${BACKEND_URL}/models/Tokisaki Kurumi.model3.json`;
+
+        live2dModel = await PIXI.live2d.Live2DModel.from(encodeURI(baseModelUrl), {
+          autoInteract: false
+        });
+
+        const fitModel = () => {
+          if (!live2dModel) return;
+          const w = window.innerWidth;
+          const h = window.innerHeight;
+          const isLandscape = w > h && w >= 768;
+
+          const modelHeight = live2dModel.internalModel?.height || live2dModel.height || 1000;
+          const scale = (h * 1.75) / modelHeight;
+
+          live2dModel.scale.set(scale);
+          live2dModel.anchor.set(0.5, 0.28);
+          live2dModel.x = isLandscape ? w * 0.32 : w * 0.5;
+          live2dModel.y = h * 0.54;
+        };
+
+        fitModel();
+        window.addEventListener('resize', fitModel);
+
+        // Tracking mata, kepala, dan badan berdasarkan koordinat mata Kurumi di layar
+        let targetX = 0;
+        let targetY = 0;
+        let currentEyeX = 0;
+        let currentEyeY = 0;
+        let currentBodyX = 0;
+        let currentBodyY = 0;
+
+        window.addEventListener('pointermove', (e) => {
+          if (!live2dModel || visualMode !== 'live2d') return;
+          const w = window.innerWidth;
+          const h = window.innerHeight;
+          const isLandscape = w > h && w >= 768;
+
+          const eyeOriginX = isLandscape ? w * 0.32 : w * 0.5;
+          const eyeOriginY = h * 0.34;
+
+          const dx = (e.clientX - eyeOriginX) / (w * 0.45);
+          const dy = (eyeOriginY - e.clientY) / (h * 0.32);
+
+          targetX = Math.max(-1, Math.min(1, dx));
+          targetY = Math.max(-1, Math.min(1, dy));
+        });
+
+        live2dApp.ticker.add(() => {
+          if (!live2dModel || visualMode !== 'live2d') return;
+          currentEyeX += (targetX - currentEyeX) * 0.18;
+          currentEyeY += (targetY - currentEyeY) * 0.18;
+          currentBodyX += (targetX - currentBodyX) * 0.08;
+          currentBodyY += (targetY - currentBodyY) * 0.08;
+
+          try {
+            const core = live2dModel.internalModel.coreModel;
+            // Gerakan bola mata
+            core.setParameterValueById('ParamEyeBallX', currentEyeX);
+            core.setParameterValueById('ParamEyeBallY', currentEyeY);
+            // Gerakan kepala mengikuti mata
+            core.setParameterValueById('ParamAngleX', currentEyeX * 22);
+            core.setParameterValueById('ParamAngleY', currentEyeY * 18);
+            core.setParameterValueById('ParamAngleZ', currentEyeX * -6);
+            // Gerakan badan halus mengikuti arah pandangan
+            core.setParameterValueById('ParamBodyAngleX', currentBodyX * 8);
+            core.setParameterValueById('ParamBodyAngleY', currentBodyY * 5);
+            core.setParameterValueById('ParamBodyAngleZ', currentBodyX * -3);
+          } catch (_) {}
+        });
+
+        live2dApp.stage.addChild(live2dModel);
+        placeholderEl.style.display = 'none';
+        setupLive2DLipSync();
+      } catch (err) {
+        console.error('Gagal memuat Live2D:', err);
+        placeholderEl.innerHTML = `<strong>Gagal Memuat Model</strong>${err.message || 'Cek Console (F12)'}`;
+      }
+    }
+
     document.querySelectorAll('[data-mode]').forEach(btn => {
       btn.addEventListener('click', () => {
         visualMode = btn.dataset.mode;
         document.querySelectorAll('[data-mode]').forEach(b => b.classList.toggle('active', b.dataset.mode === visualMode));
         document.getElementById('zafkiel-stage').style.display = visualMode === 'zafkiel' ? 'flex' : 'none';
         document.getElementById('live2d-stage').style.display = visualMode === 'live2d' ? 'flex' : 'none';
+
+        if (visualMode === 'live2d') {
+          initLive2DModel();
+        }
       });
     });
 
@@ -1305,6 +1491,25 @@
       avatarCore.classList.add('idle-heartbeat');
       updateStopButtonVisibility();
     }
+
+    currentAudio.addEventListener('play', () => {
+      avatarCore.classList.remove('idle-heartbeat');
+      avatarCore.classList.add('listening');
+      waveSpans.forEach((bar, i) => {
+        bar.style.height = `${8 + ((i * 3) % 8)}px`;
+      });
+      stateText.textContent = 'Aira Berbicara...';
+      updateStopButtonVisibility();
+
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      startMouthSyncLoop();
+    });
+
+    currentAudio.addEventListener('ended', () => {
+      avatarCore.classList.remove('listening');
+      stopHeartbeatPulse();
+      stateText.textContent = 'Menunggu Perintah';
+    });
 
     function renderClockNumerals() {
       const clockRing = document.getElementById('clock-ring');
@@ -1360,12 +1565,15 @@
     }
     animateParticles();
 
-    // Tombol voice dimatikan agar tidak memicu pemutaran audio/kredit
-    audioToggleBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      muteAudio = true;
-      currentAudio.pause();
-      currentAudio.src = '';
+    audioToggleBtn.addEventListener('click', () => {
+      muteAudio = !muteAudio;
+      if (muteAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        stopHeartbeatPulse();
+        stateText.textContent = 'Menunggu Perintah';
+      }
+      syncAudioToggleUI();
     });
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1400,6 +1608,29 @@
       if (e.key === 'Enter') document.getElementById('send-btn').click();
     });
 
+    async function syncLiveFrame() {
+      const frame = grabFrameBase64();
+      if (!frame) return;
+      try {
+        await fetch(`${BACKEND_URL}/api/live-talk`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(googleIdToken ? { 'x-google-token': googleIdToken } : {})
+          },
+          body: JSON.stringify({
+            text: '[LIVE_FRAME_SYNC]',
+            imageBase64: frame,
+            sessionId: currentSessionId,
+            googleToken: googleIdToken,
+            muteAudio: true,
+            disableVoice: true,
+            silentFrame: true
+          })
+        });
+      } catch (_) {}
+    }
+
     async function startVision(mode) {
       stopVision();
       try {
@@ -1407,24 +1638,48 @@
           ? await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
           : await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
 
+        visionModeActive = mode;
         visionVideo.srcObject = visionStream;
         visionBox.style.display = 'block';
         document.getElementById(mode === 'camera' ? 'cam-btn' : 'screen-btn').classList.add('active');
         updateStopButtonVisibility();
+
+        if (mode === 'screen') {
+          await setOverlayState(true);
+          stateText.textContent = 'Mode Overlay Live Aktif';
+          liveFrameTimer = setInterval(syncLiveFrame, 4000);
+        }
+
+        const track = visionStream.getVideoTracks()[0];
+        if (track) {
+          track.addEventListener('ended', () => {
+            stopVision();
+            stateText.textContent = 'Menunggu Perintah';
+          });
+        }
       } catch (err) {
         alert('Izin kamera/layar ditolak atau tidak didukung browser ini.');
       }
     }
 
     function stopVision() {
+      const wasScreen = visionModeActive === 'screen';
+      if (liveFrameTimer) {
+        clearInterval(liveFrameTimer);
+        liveFrameTimer = null;
+      }
       if (visionStream) {
         visionStream.getTracks().forEach(t => t.stop());
         visionStream = null;
       }
+      visionModeActive = null;
       visionBox.style.display = 'none';
       document.getElementById('cam-btn').classList.remove('active');
       document.getElementById('screen-btn').classList.remove('active');
       updateStopButtonVisibility();
+      if (wasScreen) {
+        setOverlayState(false);
+      }
     }
 
     function grabFrameBase64() {
@@ -1545,8 +1800,9 @@
             text,
             imageBase64: frame,
             lang: currentLang,
-            muteAudio: true,
-            disableVoice: true,
+            muteAudio,
+            disableVoice: muteAudio,
+            gsvApiUrl: GSV_API_URL,
             sessionId: currentSessionId,
             googleToken: googleIdToken
           })
@@ -1569,11 +1825,21 @@
 
         appendSessionMessage(currentSessionId, 'ai', historyReply);
 
-        // Voice TTS dinonaktifkan: tidak memutar data.audioBase64
-        currentAudio.pause();
-        stopHeartbeatPulse();
+        if (!muteAudio && data.audioBase64) {
+          currentAudio.src = data.audioBase64.startsWith('data:')
+            ? data.audioBase64
+            : `data:audio/wav;base64,${data.audioBase64}`;
+          currentAudio.play().catch(() => {
+            stopHeartbeatPulse();
+            stateText.textContent = 'Menunggu Perintah';
+          });
+        } else {
+          currentAudio.pause();
+          stopHeartbeatPulse();
+          stateText.textContent = 'Menunggu Perintah';
+        }
+
         setRecAnimation(null);
-        stateText.textContent = 'Menunggu Perintah';
       } catch (err) {
         const errMsg = 'Maaf, koneksi Aira terganggu sebentar...';
         airaSubtitle.textContent = errMsg;
@@ -1583,7 +1849,10 @@
       }
     }
 
-    window.addEventListener('load', () => syncServerConfig(false));
+    window.addEventListener('load', () => {
+      syncAudioToggleUI();
+      syncServerConfig(false);
+    });
   </script>
 </body>
 </html>
