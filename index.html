@@ -447,12 +447,6 @@
       animation: rotateCounter 32s linear infinite;
     }
 
-    .clock-numerals {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-    }
-
     .roman-num {
       position: absolute;
       width: 24px;
@@ -463,7 +457,7 @@
       font-size: 0.65rem;
       color: var(--gold);
       opacity: 0.88;
-      pointer-events: none;
+      animation: rotateCounter 48s linear infinite;
     }
 
     .avatar-core {
@@ -840,7 +834,6 @@
       <div id="zafkiel-stage">
         <div class="clock-outer" id="clock-ring"></div>
         <div class="clock-inner"></div>
-        <div class="clock-numerals" id="clock-numerals"></div>
         <div class="avatar-core idle-heartbeat" id="avatar-core">
           <div class="core-emblem">XII</div>
           <div class="wave-bars" id="wave-bars">
@@ -948,6 +941,7 @@
     const profileBtn = document.getElementById('profile-btn');
 
     function setRecAnimation(mode) {
+      // mode: null | 'recording' | 'sending'
       if (!mode) {
         recBadgeEl.classList.remove('active');
         recLabelEl.textContent = '';
@@ -1128,18 +1122,7 @@
       }
     }
 
-    function redirectToGoogleLogin() {
-      if (!cachedClientId) {
-        airaSubtitle.textContent = 'Google Login belum siap: GOOGLE_CLIENT_ID belum terbaca dari server.';
-        return;
-      }
-      const redirectUri = encodeURIComponent(window.location.origin + window.location.pathname);
-      const scope = encodeURIComponent('openid email profile');
-      window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${cachedClientId}&redirect_uri=${redirectUri}&response_type=id_token&scope=${scope}&nonce=${Date.now()}&prompt=select_account`;
-    }
-
-    // Tombol G khusus urusan akun/login Google, tidak pernah membuka drawer sesi
-    profileBtn.addEventListener('click', () => {
+        profileBtn.addEventListener('click', () => {
       if (googleIdToken && cachedUserProfile) {
         const label = cachedUserProfile.name || 'Akun Google';
         airaSubtitle.textContent = `Masuk sebagai ${label}.`;
@@ -1256,77 +1239,54 @@
     });
 
     async function loadSessionsList() {
-      sessionListEl.innerHTML = '';
-      let serverSessions = [];
-
       try {
         const res = await fetch(`${BACKEND_URL}/api/sessions`, {
           headers: googleIdToken ? { 'x-google-token': googleIdToken } : {}
         });
-        if (res.ok) {
-          const data = await res.json();
-          serverSessions = Array.isArray(data.sessions) ? data.sessions : [];
+        const data = await res.json();
+        sessionListEl.innerHTML = '';
+        if (!isVerifiedOwner) {
+          sessionListEl.innerHTML = '<div style="font-size:0.76rem;color:#9e8a92;padding:8px;">Masuk dengan akun Google Neruru untuk melihat riwayat sesi tersimpan.</div>';
+          return;
         }
+        if (!data.sessions || data.sessions.length === 0) {
+          sessionListEl.innerHTML = '<div style="font-size:0.76rem;color:#77666d;padding:8px;">Belum ada riwayat sesi tersimpan.</div>';
+          return;
+        }
+        data.sessions.forEach(s => {
+          const item = document.createElement('div');
+          item.className = 'session-item' + (s.id === currentSessionId ? ' active' : '');
+          item.textContent = s.title || 'Obrolan dengan Aira';
+          item.addEventListener('click', () => openSession(s.id));
+          sessionListEl.appendChild(item);
+        });
       } catch (_) {}
-
-      const mergedMap = new Map();
-      serverSessions.forEach((s) => {
-        mergedMap.set(s.id, { id: s.id, title: s.title || 'Obrolan dengan Aira' });
-      });
-      Object.keys(sessionHistories || {}).forEach((sid) => {
-        if (!mergedMap.has(sid)) {
-          const firstMsg = (sessionHistories[sid] || []).find((m) => m.role === 'user');
-          mergedMap.set(sid, {
-            id: sid,
-            title: firstMsg ? firstMsg.text.slice(0, 34) : 'Sesi Lokal'
-          });
-        }
-      });
-
-      const allSessions = Array.from(mergedMap.values());
-      if (allSessions.length === 0) {
-        sessionListEl.innerHTML = '<div style="font-size:0.76rem;color:#77666d;padding:8px;">Belum ada riwayat sesi tersimpan.</div>';
-        return;
-      }
-
-      allSessions.forEach((s) => {
-        const item = document.createElement('div');
-        item.className = 'session-item' + (s.id === currentSessionId ? ' active' : '');
-        item.textContent = s.title;
-        item.addEventListener('click', () => openSession(s.id));
-        sessionListEl.appendChild(item);
-      });
     }
 
     async function openSession(id) {
-      currentSessionId = id;
       try {
         const res = await fetch(`${BACKEND_URL}/api/sessions/${id}`, {
           headers: googleIdToken ? { 'x-google-token': googleIdToken } : {}
         });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.session) {
-            const msgs = data.session.messages || [];
-            if (msgs.length > 0) {
-              sessionHistories[id] = msgs.map((m) => ({
-                role: m.role === 'user' ? 'user' : 'ai',
-                text: m.text,
-                time: Date.now()
-              }));
-              saveSessionHistories();
-            }
-          }
+        const data = await res.json();
+        if (!data.session) return;
+        currentSessionId = id;
+        const msgs = data.session.messages || [];
+        if (msgs.length > 0) {
+          sessionHistories[id] = msgs.map((m) => ({
+            role: m.role === 'user' ? 'user' : 'ai',
+            text: m.text,
+            time: Date.now()
+          }));
+          saveSessionHistories();
         }
+        const lastUser = [...msgs].reverse().find(m => m.role === 'user');
+        const lastAi = [...msgs].reverse().find(m => m.role === 'ai');
+        transcriptTextEl.textContent = lastUser ? `Kamu: "${lastUser.text}"` : '';
+        airaSubtitle.textContent = lastAi ? lastAi.text : 'Sesi dimuat.';
+        renderCurrentSessionChat();
+        toggleDrawer(false);
       } catch (_) {}
-
-      const localMsgs = sessionHistories[id] || [];
-      const lastUser = [...localMsgs].reverse().find((m) => m.role === 'user');
-      const lastAi = [...localMsgs].reverse().find((m) => m.role === 'ai');
-      transcriptTextEl.textContent = lastUser ? `Kamu: "${lastUser.text}"` : '';
-      airaSubtitle.textContent = lastAi ? lastAi.text : 'Sesi dimuat.';
-      renderCurrentSessionChat();
-      toggleDrawer(false);
     }
 
     document.querySelectorAll('[data-mode]').forEach(btn => {
@@ -1346,41 +1306,25 @@
       updateStopButtonVisibility();
     }
 
-    // Angka Romawi ikut berputar mengelilingi pusat jam sambil tetap tegak
-    const numeralsBox = document.getElementById('clock-numerals');
-    const romanList = ['XII','I','II','III','IV','V','VI','VII','VIII','IX','X','XI'];
-    const romanEls = romanList.map((num, idx) => {
-      const el = document.createElement('span');
-      el.className = 'roman-num';
-      el.textContent = num;
-      el.dataset.idx = String(idx);
-      numeralsBox.appendChild(el);
-      return el;
-    });
-
-    const CLOCK_ORBIT_DURATION_MS = 48000;
-    const clockAnimStart = performance.now();
-
-    function updateOrbitingNumerals(now) {
-      const stage = document.getElementById('zafkiel-stage');
-      if (stage && stage.offsetParent !== null) {
-        const size = stage.offsetWidth || 250;
-        const center = size / 2;
-        const radius = center - 16;
-        const elapsed = now - clockAnimStart;
-        const spinAngle = ((elapsed % CLOCK_ORBIT_DURATION_MS) / CLOCK_ORBIT_DURATION_MS) * (Math.PI * 2);
-
-        romanEls.forEach((el) => {
-          const idx = Number(el.dataset.idx || 0);
-          const baseAngle = (idx * 30 - 90) * (Math.PI / 180);
-          const angle = baseAngle + spinAngle;
-          el.style.left = `${center + radius * Math.cos(angle) - 12}px`;
-          el.style.top = `${center + radius * Math.sin(angle) - 9}px`;
-        });
-      }
-      requestAnimationFrame(updateOrbitingNumerals);
+    function renderClockNumerals() {
+      const clockRing = document.getElementById('clock-ring');
+      clockRing.innerHTML = '';
+      const size = clockRing.offsetWidth || 250;
+      const center = size / 2;
+      const radius = center - 16;
+      const numerals = ['XII','I','II','III','IV','V','VI','VII','VIII','IX','X','XI'];
+      numerals.forEach((num, idx) => {
+        const angle = (idx * 30 - 90) * (Math.PI / 180);
+        const el = document.createElement('span');
+        el.className = 'roman-num';
+        el.textContent = num;
+        el.style.left = `${center + radius * Math.cos(angle) - 12}px`;
+        el.style.top = `${center + radius * Math.sin(angle) - 9}px`;
+        clockRing.appendChild(el);
+      });
     }
-    requestAnimationFrame(updateOrbitingNumerals);
+    window.addEventListener('resize', renderClockNumerals);
+    renderClockNumerals();
 
     const pCanvas = document.getElementById('bg-particles');
     const pCtx = pCanvas.getContext('2d');
