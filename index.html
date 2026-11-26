@@ -240,9 +240,11 @@
       gap: 6px;
     }
 
-    .audio-toggle.muted {
-      opacity: 0.5;
-      color: var(--text-muted);
+    /* Tombol Voice TTS disembunyikan & dimatikan agar kredit aman */
+    .audio-toggle,
+    #audio-toggle {
+      display: none !important;
+      pointer-events: none;
     }
 
     .google-avatar-btn {
@@ -628,7 +630,7 @@
   <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
   <aside id="history-drawer">
     <button type="button" class="new-chat-btn" id="new-session-btn">
-      <span>＋</span> Sesi Obrolan Baru
+      <span>+</span> Sesi Obrolan Baru
     </button>
     <div class="drawer-label">Riwayat Sesi</div>
     <div class="session-list" id="session-list"></div>
@@ -657,7 +659,7 @@
     </div>
 
     <div class="header-right">
-      <button type="button" class="icon-btn audio-toggle" id="audio-toggle" title="Suara On/Off">🔊</button>
+      <button type="button" class="icon-btn audio-toggle muted" id="audio-toggle" title="Voice Nonaktif" disabled aria-hidden="true">🔇</button>
       <div class="pill-group">
         <button type="button" class="pill-tab active" data-lang="id">ID</button>
         <button type="button" class="pill-tab" data-lang="en">EN</button>
@@ -717,7 +719,7 @@
 
       <input type="text" id="chat-input" placeholder="Ketik atau bicara ke Aira..." autocomplete="off" />
 
-      <button type="button" class="bar-icon" id="stop-btn" title="Hentikan Suara/Kamera">
+      <button type="button" class="bar-icon" id="stop-btn" title="Hentikan Kamera">
         <svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
       </button>
 
@@ -732,13 +734,12 @@
   <canvas id="capture-canvas" style="display:none;"></canvas>
 
   <script>
-    // Kosongkan ("") jika dilayani langsung oleh server yang sama,
-    // atau isi dengan URL backend (tanpa slash di akhir), contoh: "https://aira-backend.up.railway.app"
     const BACKEND_URL = 'https://yale-nirvana-screening-managers.trycloudflare.com';
+    const VOICE_TTS_ENABLED = false; // Dikunci mati agar kredit voice tidak terpakai
 
     let currentLang = 'id';
     let visualMode = 'zafkiel';
-    let muteAudio = false;
+    let muteAudio = true;
     let visionStream = null;
     let isListening = false;
     let currentSessionId = 'session_' + Date.now();
@@ -775,9 +776,8 @@
     const profileBtn = document.getElementById('profile-btn');
 
     function updateStopButtonVisibility() {
-      const isSpeaking = !currentAudio.paused && currentAudio.currentTime > 0;
       const hasVision = Boolean(visionStream);
-      stopBtn.classList.toggle('visible', isSpeaking || hasVision);
+      stopBtn.classList.toggle('visible', hasVision);
     }
 
     function handleGoogleCredentialResponse(response) {
@@ -868,11 +868,9 @@
           airaSubtitle.textContent = 'Ara, akhirnya kamu membuka ruang khusus untuk kita berdua, Neruru~';
         }
 
-        if (cfg.voiceChatEnabled === false) {
-          muteAudio = true;
-          audioToggleBtn.textContent = '🔇';
-          audioToggleBtn.classList.add('muted');
-        }
+        muteAudio = true;
+        audioToggleBtn.textContent = '🔇';
+        audioToggleBtn.classList.add('muted');
         if (cfg.language) setLanguageUI(cfg.language, false);
       } catch (_) {}
     }
@@ -951,48 +949,7 @@
       });
     });
 
-    let audioCtx = null;
-    let analyser = null;
-    let dataArray = null;
-    let beatRaf = null;
-
-    function initAudioAnalyser() {
-      if (audioCtx) return;
-      const AudioContext = window.AudioContext || window.webkitAudioContext;
-      audioCtx = new AudioContext();
-      const source = audioCtx.createMediaElementSource(currentAudio);
-      analyser = audioCtx.createAnalyser();
-      analyser.fftSize = 64;
-      source.connect(analyser);
-      analyser.connect(audioCtx.destination);
-      dataArray = new Uint8Array(analyser.frequencyBinCount);
-    }
-
-    function startHeartbeatPulse() {
-      avatarCore.classList.remove('idle-heartbeat');
-      updateStopButtonVisibility();
-      function tick() {
-        if (!analyser || currentAudio.paused) return;
-        analyser.getByteFrequencyData(dataArray);
-        let sum = 0;
-        for (let i = 0; i < 12; i++) sum += dataArray[i];
-        const avg = sum / 12;
-        const scale = 1 + (avg / 255) * 0.22;
-        const glow = 36 + (avg / 255) * 52;
-        avatarCore.style.transform = `scale(${scale.toFixed(3)})`;
-        avatarCore.style.boxShadow = `0 0 ${glow.toFixed(0)}px rgba(239, 35, 60, 0.9), 0 0 20px rgba(224, 184, 76, 0.45)`;
-
-        waveSpans.forEach((bar, idx) => {
-          const val = dataArray[idx * 2] || 0;
-          bar.style.height = `${Math.max(4, Math.round((val / 255) * 16))}px`;
-        });
-        beatRaf = requestAnimationFrame(tick);
-      }
-      beatRaf = requestAnimationFrame(tick);
-    }
-
     function stopHeartbeatPulse() {
-      if (beatRaf) cancelAnimationFrame(beatRaf);
       avatarCore.style.transform = '';
       avatarCore.style.boxShadow = '';
       waveSpans.forEach(bar => (bar.style.height = '5px'));
@@ -1054,14 +1011,12 @@
     }
     animateParticles();
 
-    audioToggleBtn.addEventListener('click', () => {
-      muteAudio = !muteAudio;
-      audioToggleBtn.textContent = muteAudio ? '🔇' : '🔊';
-      audioToggleBtn.classList.toggle('muted', muteAudio);
-      if (muteAudio) {
-        currentAudio.pause();
-        stopHeartbeatPulse();
-      }
+    // Tombol voice dimatikan agar tidak memicu pemutaran audio/kredit
+    audioToggleBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      muteAudio = true;
+      currentAudio.pause();
+      currentAudio.src = '';
     });
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1204,7 +1159,8 @@
             text,
             imageBase64: frame,
             lang: currentLang,
-            muteAudio,
+            muteAudio: true,
+            disableVoice: true,
             sessionId: currentSessionId,
             googleToken: googleIdToken
           })
@@ -1222,23 +1178,10 @@
           airaSpeechSub.style.display = 'none';
         }
 
-        if (data.audioBase64 && !muteAudio) {
-          initAudioAnalyser();
-          if (audioCtx.state === 'suspended') await audioCtx.resume();
-
-          currentAudio.src = data.audioBase64;
-          currentAudio.onplay = () => {
-            stateText.textContent = 'Aira Berbicara';
-            startHeartbeatPulse();
-          };
-          currentAudio.onended = () => {
-            stopHeartbeatPulse();
-            stateText.textContent = 'Menunggu Perintah';
-          };
-          await currentAudio.play();
-        } else {
-          stateText.textContent = 'Menunggu Perintah';
-        }
+        // Voice TTS dinonaktifkan: tidak memutar data.audioBase64
+        currentAudio.pause();
+        stopHeartbeatPulse();
+        stateText.textContent = 'Menunggu Perintah';
       } catch (err) {
         airaSubtitle.textContent = 'Maaf, koneksi Aira terganggu sebentar...';
         stateText.textContent = 'Terputus';
