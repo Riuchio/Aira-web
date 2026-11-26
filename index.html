@@ -1346,26 +1346,41 @@
       updateStopButtonVisibility();
     }
 
-    function renderClockNumerals() {
+    // Angka Romawi ikut berputar mengelilingi pusat jam sambil tetap tegak
+    const numeralsBox = document.getElementById('clock-numerals');
+    const romanList = ['XII','I','II','III','IV','V','VI','VII','VIII','IX','X','XI'];
+    const romanEls = romanList.map((num, idx) => {
+      const el = document.createElement('span');
+      el.className = 'roman-num';
+      el.textContent = num;
+      el.dataset.idx = String(idx);
+      numeralsBox.appendChild(el);
+      return el;
+    });
+
+    const CLOCK_ORBIT_DURATION_MS = 48000;
+    const clockAnimStart = performance.now();
+
+    function updateOrbitingNumerals(now) {
       const stage = document.getElementById('zafkiel-stage');
-      const numeralsBox = document.getElementById('clock-numerals');
-      numeralsBox.innerHTML = '';
-      const size = stage.offsetWidth || 250;
-      const center = size / 2;
-      const radius = center - 16;
-      const numerals = ['XII','I','II','III','IV','V','VI','VII','VIII','IX','X','XI'];
-      numerals.forEach((num, idx) => {
-        const angle = (idx * 30 - 90) * (Math.PI / 180);
-        const el = document.createElement('span');
-        el.className = 'roman-num';
-        el.textContent = num;
-        el.style.left = `${center + radius * Math.cos(angle) - 12}px`;
-        el.style.top = `${center + radius * Math.sin(angle) - 9}px`;
-        numeralsBox.appendChild(el);
-      });
+      if (stage && stage.offsetParent !== null) {
+        const size = stage.offsetWidth || 250;
+        const center = size / 2;
+        const radius = center - 16;
+        const elapsed = now - clockAnimStart;
+        const spinAngle = ((elapsed % CLOCK_ORBIT_DURATION_MS) / CLOCK_ORBIT_DURATION_MS) * (Math.PI * 2);
+
+        romanEls.forEach((el) => {
+          const idx = Number(el.dataset.idx || 0);
+          const baseAngle = (idx * 30 - 90) * (Math.PI / 180);
+          const angle = baseAngle + spinAngle;
+          el.style.left = `${center + radius * Math.cos(angle) - 12}px`;
+          el.style.top = `${center + radius * Math.sin(angle) - 9}px`;
+        });
+      }
+      requestAnimationFrame(updateOrbitingNumerals);
     }
-    window.addEventListener('resize', renderClockNumerals);
-    renderClockNumerals();
+    requestAnimationFrame(updateOrbitingNumerals);
 
     const pCanvas = document.getElementById('bg-particles');
     const pCtx = pCanvas.getContext('2d');
