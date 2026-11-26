@@ -447,6 +447,12 @@
       animation: rotateCounter 32s linear infinite;
     }
 
+    .clock-numerals {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
     .roman-num {
       position: absolute;
       width: 24px;
@@ -834,6 +840,7 @@
       <div id="zafkiel-stage">
         <div class="clock-outer" id="clock-ring"></div>
         <div class="clock-inner"></div>
+        <div class="clock-numerals" id="clock-numerals"></div>
         <div class="avatar-core idle-heartbeat" id="avatar-core">
           <div class="core-emblem">XII</div>
           <div class="wave-bars" id="wave-bars">
@@ -1340,9 +1347,10 @@
     }
 
     function renderClockNumerals() {
-      const clockRing = document.getElementById('clock-ring');
-      clockRing.innerHTML = '';
-      const size = clockRing.offsetWidth || 250;
+      const stage = document.getElementById('zafkiel-stage');
+      const numeralsBox = document.getElementById('clock-numerals');
+      numeralsBox.innerHTML = '';
+      const size = stage.offsetWidth || 250;
       const center = size / 2;
       const radius = center - 16;
       const numerals = ['XII','I','II','III','IV','V','VI','VII','VIII','IX','X','XI'];
@@ -1353,7 +1361,7 @@
         el.textContent = num;
         el.style.left = `${center + radius * Math.cos(angle) - 12}px`;
         el.style.top = `${center + radius * Math.sin(angle) - 9}px`;
-        clockRing.appendChild(el);
+        numeralsBox.appendChild(el);
       });
     }
     window.addEventListener('resize', renderClockNumerals);
