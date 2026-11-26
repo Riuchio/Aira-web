@@ -45,7 +45,7 @@
       z-index: 0;
     }
 
-    /* SIDEBAR RIWAYAT SESI (KIRI) */
+    /* SIDEBAR RIWAYAT SESI */
     .sidebar-backdrop {
       position: fixed;
       inset: 0;
@@ -73,125 +73,6 @@
       padding: 18px 14px;
     }
     aside#history-drawer.open { transform: translateX(0); }
-
-    /* KOTAK RIWAYAT CHAT PER SESI (GESER DARI KANAN KE KIRI) */
-    .right-drawer-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.52);
-      backdrop-filter: blur(3px);
-      z-index: 32;
-      display: none;
-    }
-    .right-drawer-backdrop.open { display: block; }
-
-    aside#right-chat-drawer {
-      position: fixed;
-      top: 58px;
-      right: 0;
-      bottom: 76px;
-      width: 272px;
-      max-width: 78vw;
-      background: rgba(14, 7, 10, 0.94);
-      border: 1px solid var(--gold-dim);
-      border-right: none;
-      border-radius: 20px 0 0 20px;
-      z-index: 36;
-      transform: translateX(100%);
-      transition: transform 0.26s cubic-bezier(0.22, 1, 0.36, 1);
-      display: flex;
-      flex-direction: column;
-      padding: 12px;
-      box-shadow: -10px 0 30px rgba(0, 0, 0, 0.7);
-      touch-action: pan-y;
-    }
-    aside#right-chat-drawer.dragging {
-      transition: none;
-    }
-    aside#right-chat-drawer.open {
-      transform: translateX(0);
-    }
-
-    .right-drawer-handle {
-      position: absolute;
-      left: -26px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 26px;
-      height: 68px;
-      border-radius: 14px 0 0 14px;
-      border: 1px solid var(--gold-dim);
-      border-right: none;
-      background: rgba(24, 10, 16, 0.92);
-      color: var(--gold);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: grab;
-      font-size: 0.8rem;
-      box-shadow: -4px 0 14px rgba(0, 0, 0, 0.45);
-      user-select: none;
-    }
-
-    .right-drawer-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding-bottom: 8px;
-      margin-bottom: 8px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      font-size: 0.76rem;
-      color: var(--gold);
-      font-weight: 500;
-    }
-
-    .right-drawer-close {
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(224, 184, 76, 0.25);
-      color: var(--text-main);
-      border-radius: 8px;
-      padding: 2px 7px;
-      font-size: 0.7rem;
-      cursor: pointer;
-    }
-
-    .session-chat-log {
-      flex: 1;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      padding-right: 2px;
-    }
-
-    .chat-bubble-item {
-      padding: 8px 10px;
-      border-radius: 12px;
-      font-size: 0.76rem;
-      line-height: 1.45;
-      word-break: break-word;
-    }
-    .chat-bubble-item.user {
-      background: rgba(217, 4, 41, 0.22);
-      border: 1px solid rgba(217, 4, 41, 0.38);
-      color: #ffe5ec;
-      align-self: flex-end;
-      max-width: 92%;
-    }
-    .chat-bubble-item.ai {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(224, 184, 76, 0.2);
-      color: var(--text-main);
-      align-self: flex-start;
-      max-width: 95%;
-    }
-    .chat-bubble-role {
-      display: block;
-      font-size: 0.64rem;
-      color: var(--gold);
-      margin-bottom: 2px;
-      opacity: 0.85;
-    }
 
     .new-chat-btn {
       width: 100%;
@@ -480,8 +361,8 @@
     }
 
     .avatar-core.listening {
-      border-color: var(--gold);
-      box-shadow: 0 0 38px rgba(224, 184, 76, 0.45);
+      border-color: #ff4d6d;
+      box-shadow: 0 0 50px rgba(255, 77, 109, 0.8);
     }
 
     .core-emblem {
@@ -573,33 +454,6 @@
       margin-bottom: 6px;
       min-height: 18px;
       text-align: center;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-
-    .rec-badge {
-      display: none;
-      align-items: center;
-      gap: 5px;
-      padding: 2px 8px;
-      border-radius: 99px;
-      background: rgba(224, 184, 76, 0.14);
-      border: 1px solid var(--gold-dim);
-      color: var(--gold);
-      font-size: 0.66rem;
-      letter-spacing: 0.5px;
-    }
-    .rec-badge.active {
-      display: inline-flex;
-    }
-    .rec-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--gold);
-      animation: recBlink 0.9s infinite ease-in-out;
     }
 
     .subtitle-card {
@@ -709,26 +563,25 @@
     }
     .unified-bar input::placeholder { color: var(--text-muted); }
 
-    /* Mic dibuat seragam dengan tombol lain dan hanya aktif saat diklik */
     .mic-compact {
-      width: 38px;
-      height: 38px;
+      width: 42px;
+      height: 42px;
       flex-shrink: 0;
       border-radius: 50%;
-      border: none;
-      background: rgba(255, 255, 255, 0.05);
-      color: var(--text-muted);
+      border: 1.5px solid var(--gold);
+      background: linear-gradient(145deg, #d90429, #750217);
+      color: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
+      box-shadow: 0 0 14px var(--crimson-glow);
       transition: 0.2s;
     }
 
     .mic-compact.listening {
-      background: rgba(224, 184, 76, 0.18);
-      color: var(--gold);
-      box-shadow: 0 0 0 2px rgba(224, 184, 76, 0.35);
+      background: #ef233c;
+      animation: micRipple 1.2s infinite;
     }
 
     .send-compact {
@@ -737,7 +590,7 @@
       flex-shrink: 0;
       border-radius: 50%;
       border: none;
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(224, 184, 76, 0.16);
       color: var(--gold);
       font-size: 0.9rem;
       display: flex;
@@ -763,9 +616,10 @@
       70% { transform: scale(1); }
     }
     @keyframes waveDance { from { height: 4px; } to { height: 15px; } }
-    @keyframes recBlink {
-      0%, 100% { opacity: 0.35; transform: scale(0.85); }
-      50% { opacity: 1; transform: scale(1.15); }
+    @keyframes micRipple {
+      0% { box-shadow: 0 0 0 0 rgba(239, 35, 60, 0.75); }
+      70% { box-shadow: 0 0 0 12px rgba(239, 35, 60, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(239, 35, 60, 0); }
     }
   </style>
 </head>
@@ -791,16 +645,6 @@
         <button type="button" class="logout-btn" id="logout-btn">Keluar</button>
       </div>
     </div>
-  </aside>
-
-  <div class="right-drawer-backdrop" id="right-drawer-backdrop"></div>
-  <aside id="right-chat-drawer" aria-label="Riwayat Chat Sesi">
-    <button type="button" class="right-drawer-handle" id="right-drawer-handle" title="Geser ke kiri untuk buka/tutup">⟨</button>
-    <div class="right-drawer-header">
-      <span id="right-drawer-title">Riwayat Sesi</span>
-      <button type="button" class="right-drawer-close" id="right-drawer-close">Tutup</button>
-    </div>
-    <div class="session-chat-log" id="session-chat-log"></div>
   </aside>
 
   <header>
@@ -855,10 +699,7 @@
     </div>
 
     <div class="chat-col">
-      <div id="user-transcript">
-        <span id="transcript-text"></span>
-        <span class="rec-badge" id="rec-badge"><span class="rec-dot"></span><span id="rec-label">Merekam</span></span>
-      </div>
+      <div id="user-transcript"></div>
       <div class="subtitle-card">
         <div id="aira-subtitle">Selamat datang di ruang Aira. Klik ikon G di kanan atas untuk masuk dengan Google~</div>
         <div id="aira-speech-sub"></div>
@@ -882,7 +723,7 @@
         <svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
       </button>
 
-      <button type="button" class="mic-compact" id="mic-btn" title="Klik untuk Bicara">
+      <button type="button" class="mic-compact" id="mic-btn" title="Bicara">
         <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
       </button>
 
@@ -895,8 +736,6 @@
   <script>
     const BACKEND_URL = 'https://yale-nirvana-screening-managers.trycloudflare.com';
     const VOICE_TTS_ENABLED = false; // Dikunci mati agar kredit voice tidak terpakai
-    const SESSION_STORAGE_KEY = 'aira_session_histories_v1';
-    const USER_CACHE_KEY = 'aira_google_user_v1';
 
     let currentLang = 'id';
     let visualMode = 'zafkiel';
@@ -905,10 +744,8 @@
     let isListening = false;
     let currentSessionId = 'session_' + Date.now();
     let googleIdToken = localStorage.getItem('aira_google_token') || '';
-    let cachedUserProfile = JSON.parse(localStorage.getItem(USER_CACHE_KEY) || 'null');
-    let isVerifiedOwner = Boolean(cachedUserProfile?.isOwner);
+    let isVerifiedOwner = false;
     let cachedClientId = '';
-    let sessionHistories = JSON.parse(localStorage.getItem(SESSION_STORAGE_KEY) || '{}');
 
     // Tangkap id_token jika kembali dari redirect Google
     if (window.location.hash.includes('id_token=')) {
@@ -917,8 +754,8 @@
       if (tokenFromUrl) {
         googleIdToken = tokenFromUrl;
         localStorage.setItem('aira_google_token', googleIdToken);
+        history.replaceState(null, '', window.location.pathname);
       }
-      history.replaceState(null, '', window.location.pathname);
     }
 
     const currentAudio = new Audio();
@@ -927,9 +764,7 @@
     const stateText = document.getElementById('state-text');
     const avatarCore = document.getElementById('avatar-core');
     const waveSpans = document.querySelectorAll('#wave-bars span');
-    const transcriptTextEl = document.getElementById('transcript-text');
-    const recBadgeEl = document.getElementById('rec-badge');
-    const recLabelEl = document.getElementById('rec-label');
+    const userTranscript = document.getElementById('user-transcript');
     const airaSubtitle = document.getElementById('aira-subtitle');
     const airaSpeechSub = document.getElementById('aira-speech-sub');
     const visionBox = document.getElementById('vision-box');
@@ -940,160 +775,12 @@
     const audioToggleBtn = document.getElementById('audio-toggle');
     const profileBtn = document.getElementById('profile-btn');
 
-    function setRecAnimation(mode) {
-      // mode: null | 'recording' | 'sending'
-      if (!mode) {
-        recBadgeEl.classList.remove('active');
-        recLabelEl.textContent = '';
-        return;
-      }
-      recBadgeEl.classList.add('active');
-      recLabelEl.textContent = mode === 'recording' ? 'Merekam...' : 'Mengirim...';
-    }
-
-    function applyUserProfileUI(profile) {
-      if (!profile || (!profile.name && !profile.picture)) {
-        profileBtn.innerHTML = 'G';
-        document.getElementById('account-pill').style.display = 'none';
-        document.getElementById('g-signin-box').style.display = 'block';
-        return;
-      }
-      if (profile.picture) {
-        profileBtn.innerHTML = `<img src="${profile.picture}" alt="Profil" />`;
-        document.getElementById('drawer-avatar').src = profile.picture;
-      } else {
-        const initial = (profile.name || 'G').charAt(0).toUpperCase();
-        profileBtn.textContent = initial;
-        document.getElementById('drawer-avatar').removeAttribute('src');
-      }
-      document.getElementById('drawer-username').textContent = profile.name || 'Akun Google';
-      document.getElementById('account-pill').style.display = 'flex';
-      document.getElementById('g-signin-box').style.display = 'none';
-    }
-
-    if (googleIdToken && cachedUserProfile) {
-      applyUserProfileUI(cachedUserProfile);
-    }
-
-    const rightDrawer = document.getElementById('right-chat-drawer');
-    const rightBackdrop = document.getElementById('right-drawer-backdrop');
-    const rightHandle = document.getElementById('right-drawer-handle');
-    const rightCloseBtn = document.getElementById('right-drawer-close');
-    const sessionChatLogEl = document.getElementById('session-chat-log');
-    const rightDrawerTitle = document.getElementById('right-drawer-title');
-    let isRightDrawerOpen = false;
-
-    function saveSessionHistories() {
-      try {
-        localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionHistories));
-      } catch (_) {}
-    }
-
-    function setRightDrawerOpen(open) {
-      isRightDrawerOpen = open;
-      rightDrawer.classList.remove('dragging');
-      rightDrawer.style.transform = '';
-      rightDrawer.classList.toggle('open', open);
-      rightBackdrop.classList.toggle('open', open);
-      rightHandle.textContent = open ? '⟩' : '⟨';
-      if (open) renderCurrentSessionChat();
-    }
-
-    function appendSessionMessage(sessionId, role, text) {
-      if (!text) return;
-      if (!Array.isArray(sessionHistories[sessionId])) {
-        sessionHistories[sessionId] = [];
-      }
-      sessionHistories[sessionId].push({ role, text, time: Date.now() });
-      saveSessionHistories();
-      if (sessionId === currentSessionId) {
-        renderCurrentSessionChat();
-      }
-    }
-
-    function renderCurrentSessionChat() {
-      const list = sessionHistories[currentSessionId] || [];
-      rightDrawerTitle.textContent = `Sesi (${list.length} pesan)`;
-      sessionChatLogEl.innerHTML = '';
-
-      if (list.length === 0) {
-        sessionChatLogEl.innerHTML = '<div style="font-size:0.74rem;color:#9e8a92;padding:8px;text-align:center;">Belum ada pesan di sesi ini.</div>';
-        return;
-      }
-
-      list.forEach((m) => {
-        const item = document.createElement('div');
-        item.className = `chat-bubble-item ${m.role === 'user' ? 'user' : 'ai'}`;
-        item.innerHTML = `<span class="chat-bubble-role">${m.role === 'user' ? 'Kamu' : 'Aira'}</span>${m.text}`;
-        sessionChatLogEl.appendChild(item);
-      });
-      sessionChatLogEl.scrollTop = sessionChatLogEl.scrollHeight;
-    }
-
-    let dragStartX = null;
-    let dragCurrentDelta = 0;
-    let isDraggingDrawer = false;
-
-    function onPointerDownDrawer(e) {
-      dragStartX = e.clientX;
-      dragCurrentDelta = 0;
-      isDraggingDrawer = true;
-      rightDrawer.classList.add('dragging');
-    }
-
-    function onPointerMoveDrawer(e) {
-      if (!isDraggingDrawer || dragStartX === null) return;
-      const dx = e.clientX - dragStartX;
-      const width = rightDrawer.offsetWidth || 272;
-
-      if (!isRightDrawerOpen) {
-        const clamped = Math.max(-width, Math.min(0, dx));
-        dragCurrentDelta = clamped;
-        rightDrawer.style.transform = `translateX(${width + clamped}px)`;
-      } else {
-        const clamped = Math.max(0, Math.min(width, dx));
-        dragCurrentDelta = clamped;
-        rightDrawer.style.transform = `translateX(${clamped}px)`;
-      }
-    }
-
-    function onPointerUpDrawer() {
-      if (!isDraggingDrawer) return;
-      isDraggingDrawer = false;
-      rightDrawer.classList.remove('dragging');
-      rightDrawer.style.transform = '';
-
-      if (!isRightDrawerOpen && dragCurrentDelta < -45) {
-        setRightDrawerOpen(true);
-      } else if (isRightDrawerOpen && dragCurrentDelta > 45) {
-        setRightDrawerOpen(false);
-      } else {
-        setRightDrawerOpen(isRightDrawerOpen);
-      }
-      dragStartX = null;
-      dragCurrentDelta = 0;
-    }
-
-    rightHandle.addEventListener('pointerdown', onPointerDownDrawer);
-    rightDrawer.addEventListener('pointerdown', (e) => {
-      if (e.target === rightDrawer || e.target === rightHandle) onPointerDownDrawer(e);
-    });
-    window.addEventListener('pointermove', onPointerMoveDrawer);
-    window.addEventListener('pointerup', onPointerUpDrawer);
-
-    rightHandle.addEventListener('click', () => {
-      if (Math.abs(dragCurrentDelta) < 6) setRightDrawerOpen(!isRightDrawerOpen);
-    });
-    rightCloseBtn.addEventListener('click', () => setRightDrawerOpen(false));
-    rightBackdrop.addEventListener('click', () => setRightDrawerOpen(false));
-
     function updateStopButtonVisibility() {
       const hasVision = Boolean(visionStream);
       stopBtn.classList.toggle('visible', hasVision);
     }
 
     function handleGoogleCredentialResponse(response) {
-      if (!response || !response.credential) return;
       googleIdToken = response.credential;
       localStorage.setItem('aira_google_token', googleIdToken);
       syncServerConfig(true);
@@ -1101,7 +788,7 @@
 
     function initGoogleIdentity(clientId) {
       cachedClientId = clientId || cachedClientId;
-      if (!cachedClientId || !window.google || !google.accounts || !google.accounts.id) return;
+      if (!cachedClientId || !window.google || !google.accounts) return;
 
       google.accounts.id.initialize({
         client_id: cachedClientId,
@@ -1110,7 +797,7 @@
       });
 
       const box = document.getElementById('g-signin-box');
-      if (box && !googleIdToken) {
+      if (box) {
         box.innerHTML = '';
         google.accounts.id.renderButton(box, {
           theme: 'filled_black',
@@ -1123,33 +810,31 @@
     }
 
     profileBtn.addEventListener('click', () => {
-      if (googleIdToken && cachedUserProfile) {
-        toggleDrawer(true);
-        return;
-      }
       if (!cachedClientId) {
-        toggleDrawer(true);
+        alert('GOOGLE_CLIENT_ID belum terbaca dari .env. Pastikan sudah disimpan di .env lalu restart node index.js.');
         return;
       }
-      if (window.google && google.accounts && google.accounts.id) {
-        try {
-          google.accounts.id.prompt();
-        } catch (_) {
-          toggleDrawer(true);
-        }
-      } else {
-        toggleDrawer(true);
+      if (!window.google || !google.accounts) {
+        alert('Skrip Google Login belum selesai dimuat. Tunggu 2 detik lalu klik lagi.');
+        return;
       }
+
+      google.accounts.id.prompt((notification) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          const redirectUri = encodeURIComponent(window.location.origin);
+          const scope = encodeURIComponent('openid email profile');
+          window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${cachedClientId}&redirect_uri=${redirectUri}&response_type=token%20id_token&scope=${scope}&nonce=${Date.now()}&prompt=select_account`;
+        }
+      });
     });
 
     document.getElementById('logout-btn').addEventListener('click', () => {
       googleIdToken = '';
-      cachedUserProfile = null;
       isVerifiedOwner = false;
       localStorage.removeItem('aira_google_token');
-      localStorage.removeItem(USER_CACHE_KEY);
-      applyUserProfileUI(null);
-      initGoogleIdentity(cachedClientId);
+      profileBtn.innerHTML = 'G';
+      document.getElementById('account-pill').style.display = 'none';
+      document.getElementById('g-signin-box').style.display = 'block';
       airaSubtitle.textContent = 'Kamu telah keluar. Mode Tamu aktif.';
       toggleDrawer(false);
     });
@@ -1159,7 +844,6 @@
         const res = await fetch(`${BACKEND_URL}/api/live-config`, {
           headers: googleIdToken ? { 'x-google-token': googleIdToken } : {}
         });
-        if (!res.ok) return;
         const cfg = await res.json();
 
         if (cfg.googleClientId) {
@@ -1168,25 +852,19 @@
         }
 
         isVerifiedOwner = Boolean(cfg.isOwner);
-        if (googleIdToken && (cfg.userName || cfg.userPicture)) {
-          cachedUserProfile = {
-            name: cfg.userName || 'Akun Google',
-            picture: cfg.userPicture || null,
-            isOwner: isVerifiedOwner
-          };
-          localStorage.setItem(USER_CACHE_KEY, JSON.stringify(cachedUserProfile));
-          applyUserProfileUI(cachedUserProfile);
-        } else if (!googleIdToken) {
-          cachedUserProfile = null;
-          localStorage.removeItem(USER_CACHE_KEY);
-          applyUserProfileUI(null);
+        if (cfg.userPicture) {
+          profileBtn.innerHTML = `<img src="${cfg.userPicture}" alt="Profil" />`;
+          document.getElementById('drawer-avatar').src = cfg.userPicture;
+          document.getElementById('drawer-username').textContent = cfg.userName || 'Akun Google';
+          document.getElementById('account-pill').style.display = 'flex';
+          document.getElementById('g-signin-box').style.display = 'none';
         }
 
         if (justLoggedIn) {
           airaSubtitle.textContent = isVerifiedOwner
             ? 'Ara, selamat datang kembali, Neruru~ Ruang khusus kita sudah terbuka.'
             : `Halo ${cfg.userName || 'Tamu'}, senang bertemu denganmu. Ada yang bisa Aira bantu?`;
-        } else if (isVerifiedOwner && !googleIdToken) {
+        } else if (isVerifiedOwner) {
           airaSubtitle.textContent = 'Ara, akhirnya kamu membuka ruang khusus untuk kita berdua, Neruru~';
         }
 
@@ -1194,12 +872,7 @@
         audioToggleBtn.textContent = '🔇';
         audioToggleBtn.classList.add('muted');
         if (cfg.language) setLanguageUI(cfg.language, false);
-        renderCurrentSessionChat();
-      } catch (_) {
-        if (googleIdToken && cachedUserProfile) {
-          applyUserProfileUI(cachedUserProfile);
-        }
-      }
+      } catch (_) {}
     }
 
     const drawer = document.getElementById('history-drawer');
@@ -1209,10 +882,7 @@
     function toggleDrawer(open) {
       drawer.classList.toggle('open', open);
       backdrop.classList.toggle('open', open);
-      if (open) {
-        if (googleIdToken && cachedUserProfile) applyUserProfileUI(cachedUserProfile);
-        loadSessionsList();
-      }
+      if (open) loadSessionsList();
     }
 
     document.getElementById('menu-btn').addEventListener('click', () => toggleDrawer(true));
@@ -1220,17 +890,11 @@
 
     document.getElementById('new-session-btn').addEventListener('click', () => {
       currentSessionId = 'session_' + Date.now();
-      if (!Array.isArray(sessionHistories[currentSessionId])) {
-        sessionHistories[currentSessionId] = [];
-        saveSessionHistories();
-      }
-      transcriptTextEl.textContent = '';
-      setRecAnimation(null);
+      userTranscript.textContent = '';
       airaSubtitle.textContent = isVerifiedOwner
         ? 'Sesi baru dimulai, Neruru~ Tenang saja, Aira tetap mengingat semua cerita kita sebelumnya.'
         : 'Sesi obrolan baru dimulai. Silakan sampaikan pertanyaanmu.';
       airaSpeechSub.style.display = 'none';
-      renderCurrentSessionChat();
       toggleDrawer(false);
     });
 
@@ -1268,19 +932,10 @@
         if (!data.session) return;
         currentSessionId = id;
         const msgs = data.session.messages || [];
-        if (msgs.length > 0) {
-          sessionHistories[id] = msgs.map((m) => ({
-            role: m.role === 'user' ? 'user' : 'ai',
-            text: m.text,
-            time: Date.now()
-          }));
-          saveSessionHistories();
-        }
         const lastUser = [...msgs].reverse().find(m => m.role === 'user');
         const lastAi = [...msgs].reverse().find(m => m.role === 'ai');
-        transcriptTextEl.textContent = lastUser ? `Kamu: "${lastUser.text}"` : '';
+        userTranscript.textContent = lastUser ? `Kamu: "${lastUser.text}"` : '';
         airaSubtitle.textContent = lastAi ? lastAi.text : 'Sesi dimuat.';
-        renderCurrentSessionChat();
         toggleDrawer(false);
       } catch (_) {}
     }
@@ -1388,7 +1043,7 @@
     document.getElementById('send-btn').addEventListener('click', () => {
       const input = document.getElementById('chat-input');
       if (!input.value.trim()) return;
-      sendToAira(input.value.trim(), false);
+      sendToAira(input.value.trim());
       input.value = '';
     });
 
@@ -1454,35 +1109,21 @@
     if (recognition) {
       recognition.lang = 'id-ID';
       recognition.interimResults = false;
-      recognition.continuous = false;
 
       recognition.onstart = () => {
         isListening = true;
         micBtn.classList.add('listening');
         avatarCore.classList.add('listening');
-        setRecAnimation('recording');
         stateText.textContent = 'Mendengarkan...';
       };
 
       recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript.trim();
-        isListening = false;
-        micBtn.classList.remove('listening');
-        avatarCore.classList.remove('listening');
-        try { recognition.stop(); } catch (_) {}
-        if (transcript) {
-          sendToAira(transcript, true);
-        } else {
-          setRecAnimation(null);
-          stateText.textContent = 'Menunggu Perintah';
-        }
+        if (transcript) sendToAira(transcript);
       };
 
       recognition.onerror = () => {
-        isListening = false;
-        micBtn.classList.remove('listening');
         avatarCore.classList.remove('listening');
-        setRecAnimation(null);
         stateText.textContent = 'Menunggu Perintah';
       };
 
@@ -1490,9 +1131,6 @@
         isListening = false;
         micBtn.classList.remove('listening');
         avatarCore.classList.remove('listening');
-        if (recLabelEl.textContent === 'Merekam...') {
-          setRecAnimation(null);
-        }
       };
     }
 
@@ -1501,32 +1139,12 @@
         alert('Browser ini belum mendukung mic langsung. Gunakan kolom ketik di sampingnya.');
         return;
       }
-      if (isListening) {
-        isListening = false;
-        micBtn.classList.remove('listening');
-        avatarCore.classList.remove('listening');
-        setRecAnimation(null);
-        try { recognition.stop(); } catch (_) {}
-        stateText.textContent = 'Menunggu Perintah';
-      } else {
-        recognition.lang = currentLang === 'ja' ? 'ja-JP' : currentLang === 'en' ? 'en-US' : 'id-ID';
-        try {
-          recognition.start();
-        } catch (_) {
-          isListening = false;
-          micBtn.classList.remove('listening');
-          avatarCore.classList.remove('listening');
-          setRecAnimation(null);
-        }
-      }
+      if (isListening) recognition.stop();
+      else recognition.start();
     });
 
-    async function sendToAira(text, fromVoice = false) {
-      transcriptTextEl.textContent = `Kamu: "${text}"`;
-      if (fromVoice) {
-        setRecAnimation('sending');
-      }
-      appendSessionMessage(currentSessionId, 'user', text);
+    async function sendToAira(text) {
+      userTranscript.textContent = `Kamu: "${text}"`;
       stateText.textContent = 'Memproses Waktu...';
       const frame = grabFrameBase64();
 
@@ -1551,30 +1169,21 @@
         const data = await res.json();
         if (data.error) throw new Error(data.error);
 
-        const mainReply = data.subtitle || data.speech;
-        airaSubtitle.textContent = mainReply;
+        airaSubtitle.textContent = data.subtitle || data.speech;
 
-        let historyReply = mainReply;
         if (currentLang !== 'id' && data.speech && data.speech !== data.subtitle) {
           airaSpeechSub.style.display = 'block';
           airaSpeechSub.textContent = data.speech;
-          historyReply = `${mainReply} (${data.speech})`;
         } else {
           airaSpeechSub.style.display = 'none';
         }
 
-        appendSessionMessage(currentSessionId, 'ai', historyReply);
-
         // Voice TTS dinonaktifkan: tidak memutar data.audioBase64
         currentAudio.pause();
         stopHeartbeatPulse();
-        setRecAnimation(null);
         stateText.textContent = 'Menunggu Perintah';
       } catch (err) {
-        const errMsg = 'Maaf, koneksi Aira terganggu sebentar...';
-        airaSubtitle.textContent = errMsg;
-        appendSessionMessage(currentSessionId, 'ai', errMsg);
-        setRecAnimation(null);
+        airaSubtitle.textContent = 'Maaf, koneksi Aira terganggu sebentar...';
         stateText.textContent = 'Terputus';
       }
     }
