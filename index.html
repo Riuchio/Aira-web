@@ -457,7 +457,7 @@
       font-size: 0.65rem;
       color: var(--gold);
       opacity: 0.88;
-      animation: rotateCounter 48s linear infinite;
+      pointer-events: none;
     }
 
     .avatar-core {
@@ -1131,10 +1131,11 @@
       window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${cachedClientId}&redirect_uri=${redirectUri}&response_type=id_token&scope=${scope}&nonce=${Date.now()}&prompt=select_account`;
     }
 
-    // Tombol G khusus login Google (atau buka info akun jika sudah login)
+    // Tombol G khusus urusan akun/login Google, tidak pernah membuka drawer sesi
     profileBtn.addEventListener('click', () => {
       if (googleIdToken && cachedUserProfile) {
-        toggleDrawer(true);
+        const label = cachedUserProfile.name || 'Akun Google';
+        airaSubtitle.textContent = `Masuk sebagai ${label}.`;
         return;
       }
 
