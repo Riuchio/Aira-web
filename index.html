@@ -947,10 +947,26 @@
 
   <script>
     const isLocalHost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+    const urlParams = new URLSearchParams(window.location.search);
+
+    const paramBackend = urlParams.get('backend');
+    const paramGsv = urlParams.get('gsv');
+
+    if (paramBackend) {
+      localStorage.setItem('aira_backend_url', paramBackend.replace(/\/+$/, ''));
+    }
+    if (paramGsv) {
+      localStorage.setItem('aira_gsv_url', paramGsv.replace(/\/+$/, ''));
+    }
+    if (paramBackend || paramGsv) {
+      history.replaceState(null, '', window.location.pathname);
+    }
+
     const BACKEND_URL = isLocalHost
       ? window.location.origin
-      : 'https://sterling-mesh-atmospheric-investigations.trycloudflare.com';
-    const GSV_API_URL = 'https://sterling-mesh-atmospheric-investigations.trycloudflare.com';
+      : (localStorage.getItem('aira_backend_url') || 'https://sterling-mesh-atmospheric-investigations.trycloudflare.com');
+
+    const GSV_API_URL = localStorage.getItem('aira_gsv_url') || '';
     const SESSION_STORAGE_KEY = 'aira_session_histories_v1';
     const USER_CACHE_KEY = 'aira_google_user_v1';
 
